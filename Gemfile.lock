@@ -2,6 +2,8 @@ GEM
   remote: http://rubygems.org/
   specs:
     lumberjack (1.0.2)
+    lumberjack_syslog_device (1.0.0)
+      lumberjack (~> 1.0)
     nokogiri (1.5.3)
 
 PLATFORMS
@@ -9,4 +11,5 @@ PLATFORMS
 
 DEPENDENCIES
   lumberjack
+  lumberjack_syslog_device
   nokogiri

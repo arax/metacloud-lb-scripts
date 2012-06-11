@@ -2,3 +2,6 @@
 *.iml
 *.ipr
 *.iws
+
+# VIM temp files
+*.swp
