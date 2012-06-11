@@ -15,12 +15,8 @@
 #--------------------------------------------------------------------------- #
 
 $: << File.expand_path("..", __FILE__) + '/lib'
-$: << File.expand_path("..", __FILE__) + '/lib/oca'
 
-require 'services/syslog'
-require 'OpenNebula'
+require 'notifier'
 
-include OpenNebula
-
-service = SyslogService.new
-service.notify "Hello, I'm a Syslog Notifier for OpenNebula."
+notifier = Notifier.new :syslog
+notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula."

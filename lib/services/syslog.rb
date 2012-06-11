@@ -21,7 +21,7 @@ class SyslogService
     @logger.progname = notifier_name
   end
 
-  def notify(message)
+  def write(message)
     @logger.info message
   end
 

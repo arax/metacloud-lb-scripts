@@ -5,6 +5,7 @@ GEM
     lumberjack_syslog_device (1.0.0)
       lumberjack (~> 1.0)
     nokogiri (1.5.3)
+    require_all (1.2.1)
 
 PLATFORMS
   ruby
@@ -13,3 +14,4 @@ DEPENDENCIES
   lumberjack
   lumberjack_syslog_device
   nokogiri
+  require_all

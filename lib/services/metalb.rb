@@ -12,13 +12,13 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
-class MetaLbService
+class MetalbService
 
   def initialize(notifier_name = "OpenNebulaMetaLBNotifier")
     ## nothing here yet
   end
 
-  def notify(message)
+  def write(message)
     ## nothing here yet
   end
 
