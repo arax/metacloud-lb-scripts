@@ -17,6 +17,9 @@
 $: << File.expand_path("..", __FILE__) + '/lib'
 
 require 'notifier'
+require 'optparse_notifier'
 
-notifier = Notifier.new :syslog
-notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula."
+options = OptparseNotifier.parse(ARGV)
+
+notifier = Notifier.new options.service
+notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{options.vm_template}."
