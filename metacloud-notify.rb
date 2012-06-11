@@ -30,6 +30,7 @@ logger.level = ERROR unless options.debug
 
 notifier = Notifier.new(options.service, logger)
 
-vm_info = notifier.read_template options.vm_template
+vm_template_xml = notifier.decode_base64 options.vm_template
+vm_info = notifier.read_template vm_template_xml
 
 notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{vm_info.NAME}."

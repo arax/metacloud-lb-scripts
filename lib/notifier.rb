@@ -38,16 +38,19 @@ class Notifier
  
   end
 
-  def read_template(vm_template_base64)
-    
-    @logger.debug "Decoding BASE64 template: \n" + vm_template_base64
-    vm_template_xml = Base64.decode64 vm_template_base64
-    
-    @logger.debug "Parsing XML template: \n" + vm_template_xml
-    vm_template = VMTemplate.parse(vm_template_xml, :single => true)
+  def decode_base64(encoded_string)
+
+    @logger.debug "Decoding BASE64: \n" + encoded_string
+    Base64.decode64 encoded_string
+
+  end
+
+  def read_template(vm_template)
+
+    @logger.debug "Parsing XML template: \n" + vm_template
+    vm_template = VMTemplate.parse(vm_template, :single => true)
 
     @logger.debug "Parsed data structure for VM with ID: " + vm_template.ID.to_s
-
     vm_template
 
   end

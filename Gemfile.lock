@@ -9,6 +9,7 @@ GEM
     nokogiri-happymapper (0.5.1)
       nokogiri (~> 1.4)
     require_all (1.2.1)
+    test-unit (2.4.7)
 
 PLATFORMS
   ruby
@@ -19,3 +20,4 @@ DEPENDENCIES
   lumberjack_syslog_device
   nokogiri-happymapper
   require_all
+  test-unit
