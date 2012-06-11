@@ -12,24 +12,44 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
-$: << File.expand_path("..", __FILE__) + '/oca'
-
 require 'require_all'
-require 'OpenNebula'
+require 'base64'
+
+require 'vm_template'
 
 require_all File.expand_path("..", __FILE__) + '/services/'
 
-include OpenNebula
-
 class Notifier
 
-  def initialize(service)
+  def initialize(service, logger)
+
+    logger.debug "Initializing notifier for " + service.to_s.capitalize
+
     classname = service.to_s.capitalize + 'Service'
-    @service = Kernel.const_get(classname).new 
+    @service = Kernel.const_get(classname).new
+    @logger = logger
+
   end
 
   def notify(message)
+
+    @logger.debug "Sending a message to " + @service.class.name 
     @service.write message
+ 
+  end
+
+  def read_template(vm_template_base64)
+    
+    @logger.debug "Decoding BASE64 template: \n" + vm_template_base64
+    vm_template_xml = Base64.decode64 vm_template_base64
+    
+    @logger.debug "Parsing XML template: \n" + vm_template_xml
+    vm_template = VMTemplate.parse(vm_template_xml, :single => true)
+
+    @logger.debug "Parsed data structure for VM with ID: " + vm_template.ID.to_s
+
+    vm_template
+
   end
 
 end

@@ -18,8 +18,18 @@ $: << File.expand_path("..", __FILE__) + '/lib'
 
 require 'notifier'
 require 'optparse_notifier'
+require 'log4r'
+
+include Log4r
 
 options = OptparseNotifier.parse(ARGV)
 
-notifier = Notifier.new options.service
-notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{options.vm_template}."
+logger = Logger.new 'MetaCloudNotifier'
+logger.outputters = Outputter.stderr
+logger.level = ERROR unless options.debug
+
+notifier = Notifier.new(options.service, logger)
+
+vm_info = notifier.read_template options.vm_template
+
+notifier.notify "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{vm_info.NAME}."

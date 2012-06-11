@@ -12,14 +12,22 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
-# OpenNebula 
-:one_xmlrpc: http://localhost:2633/RPC2
+require 'happymapper'
 
-# Authentication driver to communicate with OpenNebula core
-#   cipher, for symmetric cipher encryption of tokens
-#   x509, for x509 certificate encryption of tokens
-:core_auth: cipher
+class VMTemplate
 
-# Log debug level
-#   0 = ERROR, 1 = WARNING, 2 = INFO, 3 = DEBUG
-:debug_level: 0
+  include HappyMapper
+
+  tag 'VM'
+  element :ID, Integer
+  element :UID, Integer
+  element :GID, Integer
+  element :UNAME, String
+  element :GNAME, String
+  element :NAME, String
+  element :LCM_STATE, Integer
+  element :DEPLOY_ID, String
+  element :MEMORY, Integer
+  element :CPU, Integer
+
+end

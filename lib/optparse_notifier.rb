@@ -7,6 +7,7 @@ class OptparseNotifier
 
     options = OpenStruct.new 
     options.service = :syslog
+    options.debug = false
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: metacloud-notify.rb [OPTIONS]"
@@ -22,6 +23,10 @@ class OptparseNotifier
         options.service = service
       end
 
+      opts.on_tail("--debug", "Enable debugging messages") do |debug|
+        options.debug = debug
+      end
+
       opts.on_tail("-h", "--help", "Show this message") do
         puts opts
         exit!
@@ -32,7 +37,7 @@ class OptparseNotifier
 	  file = File.new(File.expand_path("..", __FILE__) + '/../VERSION', "r")
 	  line = file.gets
 
-          puts line            
+          puts line      
 
 	  file.close
         rescue
