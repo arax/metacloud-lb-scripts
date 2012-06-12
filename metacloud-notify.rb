@@ -34,4 +34,4 @@ vm_info = notifier.read_template vm_template_xml
 vm_user = notifier.map_user_identity vm_info.UNAME
 vm_notification = notifier.prepare_notification vm_user, vm_info
 
-notifier.notify vm_user, vm_notification
+notifier.notify vm_notification

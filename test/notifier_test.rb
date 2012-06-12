@@ -17,6 +17,7 @@
 $: << File.expand_path("..", __FILE__) + '/../lib'
 
 require 'notifier'
+require 'vm_template'
 require "test/unit"
 
 class DummyLogger
@@ -44,9 +45,10 @@ class NotifierTest < Test::Unit::TestCase
     # Test data
     @data64_wrong = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one.base64_wrong', "r").read
     @data64 = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one.base64', "r").read
+    @data_wrong = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one_wrong', "r").read
     @data = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one', "r").read
 
-    # Logger instance
+    # Notifier instance
     @notifier = Notifier.new(:syslog, @logger)
   end
 
@@ -60,12 +62,17 @@ class NotifierTest < Test::Unit::TestCase
 
     assert_equal(@data, @notifier.decode_base64(@data64), "Encoded and decoded data should match!")
     assert_not_equal(@data, @notifier.decode_base64(@data64_wrong), "Random and decoded data should not match!")
+    assert_empty(@notifier.decode_base64(""))
 
   end
 
   def test_read_template
 
-    #
+    assert_instance_of(VMTemplate, @notifier.read_template(@data))
+    assert_raise do
+      @notifier.read_template(@data_wrong)
+    end
+    assert_equal(439, @notifier.read_template(@data).ID)
 
   end
 end

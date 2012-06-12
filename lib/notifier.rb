@@ -31,9 +31,9 @@ class Notifier
 
   end
 
-  def notify(identity, message)
+  def notify(message)
 
-    @logger.debug "Sending a message related to resources used by " + identity + " to " + @service.class.name 
+    @logger.debug "Sending a message to " + @service.class.name
     @service.write message
  
   end
@@ -45,12 +45,12 @@ class Notifier
 
   end
 
-  def prepare_notification(vm_user, vm_template)
+  def prepare_notification(identity, vm_template)
 
     @logger.debug "Constructing notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name 
     raise ArgumentError, "VMTemplate should not be empty!" if vm_template == nil
 
-    "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{vm_template.NAME} owned by " + vm_user + "."
+    @service.prepare_message identity, vm_template
 
   end
 

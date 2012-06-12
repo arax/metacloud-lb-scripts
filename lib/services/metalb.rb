@@ -12,6 +12,8 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
+require 'erb'
+
 class MetalbService
 
   def initialize(notifier_name = "OpenNebulaMetaLBNotifier")
@@ -20,6 +22,13 @@ class MetalbService
 
   def write(message)
     ## nothing here yet
+  end
+
+  def prepare_message(identity, vm_template)
+
+    msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/metalb.erb").read
+    msg_template.result(binding)
+
   end
 
 end
