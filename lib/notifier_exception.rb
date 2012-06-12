@@ -1,5 +1,3 @@
-#!/usr/bin/env ruby
-
 # -------------------------------------------------------------------------- #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may    #
 # not use this file except in compliance with the License. You may obtain    #
@@ -14,24 +12,5 @@
 # limitations under the License.                                             #
 #--------------------------------------------------------------------------- #
 
-$: << File.expand_path("..", __FILE__) + '/lib'
-
-require 'lumberjack'
-require 'notifier'
-require 'optparse_notifier'
-
-options = OptparseNotifier.parse(ARGV)
-
-logger = Lumberjack::Logger.new
-logger.progname = 'MetaCloudNotifier'
-logger.level = Lumberjack::Severity::DEBUG if options.debug
-
-notifier = Notifier.new(options.service, logger)
-
-vm_template_xml = notifier.decode_base64 options.vm_template
-vm_info = notifier.read_template vm_template_xml
-
-vm_user = notifier.map_user_identity(vm_info.UNAME)
-vm_notification = notifier.prepare_notification(vm_info)
-
-notifier.notify vm_user, vm_notification
+class NotifierError < StandardError
+end
