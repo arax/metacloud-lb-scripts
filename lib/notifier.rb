@@ -45,12 +45,12 @@ class Notifier
 
   end
 
-  def prepare_notification(vm_template)
+  def prepare_notification(vm_user, vm_template)
 
     @logger.debug "Constructing notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name 
     raise ArgumentError, "VMTemplate should not be empty!" if vm_template == nil
 
-    "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{vm_template.NAME}."
+    "Hello, I'm a Syslog Notifier for OpenNebula. There is something going on with #{vm_template.NAME} owned by " + vm_user + "."
 
   end
 
@@ -64,7 +64,7 @@ class Notifier
   def read_template(vm_template_xml)
 
     @logger.debug "Parsing XML template: \n" + vm_template_xml
-    vm_template = VMTemplate.parse(vm_template_xml, :single => true)
+    vm_template = VMTemplate.parse vm_template_xml, :single => true
 
     @logger.debug "Parsed data structure for VM with ID: " + vm_template.ID.to_s
     vm_template
