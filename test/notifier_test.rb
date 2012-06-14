@@ -16,9 +16,13 @@
 
 $: << File.expand_path("..", __FILE__) + '/../lib'
 
+# bundler integration and dependencies
+require 'rubygems'
+require 'bundler/setup'
+
 require 'notifier'
 require 'vm_template'
-require 'xml'
+require 'nokogiri'
 require "test/unit"
 
 class DummyLogger
@@ -70,7 +74,7 @@ class NotifierTest < Test::Unit::TestCase
   def test_read_template
 
     assert_instance_of(VMTemplate, @notifier.read_template(@data))
-    assert_raise LibXML::XML::Error do
+    assert_raise Nokogiri::XML::SyntaxError do
       @notifier.read_template(@data_wrong)
     end
     assert_equal(439, @notifier.read_template(@data).ID)

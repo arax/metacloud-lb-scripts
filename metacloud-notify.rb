@@ -16,6 +16,10 @@
 
 $: << File.expand_path("..", __FILE__) + '/lib'
 
+# bundler integration and dependencies
+require 'rubygems'
+require 'bundler/setup'
+
 require 'lumberjack'
 require 'notifier'
 require 'optparse_notifier'
