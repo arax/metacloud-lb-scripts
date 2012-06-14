@@ -13,13 +13,14 @@
 #--------------------------------------------------------------------------- #
 
 require 'lumberjack_syslog_device'
+require 'syslog'
 require 'erb'
 
 class SyslogService
 
   def initialize(notifier_name = "OpenNebulaSyslogNotifier")
 
-    @syslog = Lumberjack::Logger.new(Lumberjack::SyslogDevice.new)
+    @syslog = Lumberjack::Logger.new(Lumberjack::SyslogDevice.new({:facility => Syslog::LOG_SYSLOG}))
     @syslog.progname = notifier_name
 
   end

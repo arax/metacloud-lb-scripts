@@ -18,6 +18,7 @@ $: << File.expand_path("..", __FILE__) + '/../lib'
 
 require 'notifier'
 require 'vm_template'
+require 'xml'
 require "test/unit"
 
 class DummyLogger
@@ -69,7 +70,7 @@ class NotifierTest < Test::Unit::TestCase
   def test_read_template
 
     assert_instance_of(VMTemplate, @notifier.read_template(@data))
-    assert_raise do
+    assert_raise LibXML::XML::Error do
       @notifier.read_template(@data_wrong)
     end
     assert_equal(439, @notifier.read_template(@data).ID)

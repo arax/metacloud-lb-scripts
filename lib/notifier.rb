@@ -21,13 +21,14 @@ require_all File.expand_path("..", __FILE__) + '/services/'
 
 class Notifier
 
-  def initialize(service, logger)
+  def initialize(service, logger, mapfile = nil)
 
     logger.debug "Initializing notifier for " + service.to_s.capitalize
 
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new
     @logger = logger
+    @mapfile = YAML.load(File.read(mapfile)) if not mapfile.nil?
 
   end
 
@@ -41,7 +42,11 @@ class Notifier
   def map_user_identity(user_name)
 
     @logger.debug "Looking for global identity of user " + user_name
-    user_name
+    unless @mapfile.nil? or @mapfile.has_key? user_name
+      @mapfile[user_name] 
+    else
+      user_name
+    end
 
   end
 
