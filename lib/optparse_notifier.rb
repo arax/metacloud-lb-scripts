@@ -15,6 +15,10 @@ class OptparseNotifier
       opts.separator ""
       opts.separator "Options:"
 
+      opts.on("--vm-state [STATE]", [:create, :prolog, :running, :shutdown, :stop, :done, :failed], "State of the VM, i.e. name of the ON hook that has been triggered") do |vm_state|
+        options.vm_state = vm_state
+      end
+
       opts.on("--vm-template [TEMPLATE]", String, "Base64 encoded XML of the VM template, mandatory") do |vm_template|
         options.vm_template = vm_template
       end
@@ -57,7 +61,7 @@ class OptparseNotifier
       exit!
     end
 
-    mandatory = [:service, :vm_template]
+    mandatory = [:service, :vm_template, :vm_state]
     options_hash = options.marshal_dump
 
     missing = mandatory.select{ |param| options_hash[param].nil? }

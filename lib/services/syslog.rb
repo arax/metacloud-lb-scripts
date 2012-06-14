@@ -31,7 +31,7 @@ class SyslogService
 
   end
 
-  def prepare_message(identity, vm_template)
+  def prepare_message(vm_state, identity, vm_template)
 
     msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/syslog.erb").read
     msg_template.result(binding)

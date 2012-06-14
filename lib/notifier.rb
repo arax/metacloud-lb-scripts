@@ -50,12 +50,12 @@ class Notifier
 
   end
 
-  def prepare_notification(identity, vm_template)
+  def prepare_notification(vm_state, user_identity, vm_template)
 
-    @logger.debug "Constructing notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name 
+    @logger.debug "Constructing " + vm_state.to_s.upcase + " notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name
     raise ArgumentError, "VMTemplate should not be empty!" if vm_template == nil
 
-    @service.prepare_message identity, vm_template
+    @service.prepare_message vm_state, user_identity, vm_template
 
   end
 
