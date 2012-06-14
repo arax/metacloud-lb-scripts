@@ -80,4 +80,14 @@ class NotifierTest < Test::Unit::TestCase
     assert_equal(439, @notifier.read_template(@data).ID)
 
   end
+
+  def test_map_user_identity
+    assert_equal("oneadmin", @notifier.map_user_identity("oneadmin"))
+  end
+
+  def test_prepare_notification
+    assert_raise ArgumentError do
+      @notifier.prepare_notification(:create, "oneadmin", nil)
+    end
+  end
 end

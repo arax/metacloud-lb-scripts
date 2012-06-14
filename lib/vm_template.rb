@@ -25,9 +25,18 @@ class VMTemplate
   element :UNAME, String
   element :GNAME, String
   element :NAME, String
+  element :STATE, Integer
   element :LCM_STATE, Integer
+  element :STIME, Integer
+  element :ETIME, Integer
   element :DEPLOY_ID, String
   element :MEMORY, Integer
   element :CPU, Integer
+  element :NET_TX, Integer
+  element :NET_RX, Integer
+  has_one :HOSTNAME, String, :xpath => 'TEMPLATE/CONTEXT/HOSTNAME'
+  has_many :IMAGES, String, :xpath => 'TEMPLATE/DISK/IMAGE'
+  has_many :IPS, String, :xpath => 'TEMPLATE/NIC/IP'
+  has_many :HOSTS, String, :xpath => 'HISTORY_RECORDS/HISTORY/HOSTNAME'
 
 end

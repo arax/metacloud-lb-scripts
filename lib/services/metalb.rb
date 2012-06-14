@@ -24,7 +24,7 @@ class MetalbService
     ## nothing here yet
   end
 
-  def prepare_message(vm_state, identity, vm_template)
+  def prepare_message(vm_state, user_identity, vm_template)
 
     msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/metalb.erb").read
     msg_template.result(binding)

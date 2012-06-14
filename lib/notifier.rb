@@ -28,7 +28,7 @@ class Notifier
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new
     @logger = logger
-    @mapfile = YAML.load(File.read(mapfile)) if not mapfile.nil?
+    @mapfile = YAML.load(File.read(mapfile)) unless mapfile.nil?
 
   end
 
@@ -52,8 +52,8 @@ class Notifier
 
   def prepare_notification(vm_state, user_identity, vm_template)
 
+    raise ArgumentError, "VM should not be empty!" if vm_template.nil?
     @logger.debug "Constructing " + vm_state.to_s.upcase + " notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name
-    raise ArgumentError, "VMTemplate should not be empty!" if vm_template == nil
 
     @service.prepare_message vm_state, user_identity, vm_template
 
