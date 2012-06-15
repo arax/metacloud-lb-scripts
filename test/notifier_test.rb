@@ -47,11 +47,22 @@ class NotifierTest < Test::Unit::TestCase
     # Fake logger
     @logger = DummyLogger.new
 
+    @data64 = {}
+    @data = {}
+    @data_wrong = {}
+
     # Test data
-    @data64_wrong = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one.base64_wrong', "r").read
-    @data64 = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one.base64', "r").read
-    @data_wrong = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one_wrong', "r").read
-    @data = File.open(File.expand_path("..", __FILE__) + '/mockdata/vm.one', "r").read
+    Dir.glob(File.expand_path("..", __FILE__) + '/mockdata/base64/*.460') do |data64|
+      @data64[File.basename(data64)] = File.open(data64, "r").read
+    end
+
+    Dir.glob(File.expand_path("..", __FILE__) + '/mockdata/malformed/*.malf') do |malformed|
+      @data_wrong[File.basename(malformed)] = File.open(malformed, "r").read
+    end
+
+    Dir.glob(File.expand_path("..", __FILE__) + '/mockdata/xml/*.460') do |xml|
+      @data[File.basename(xml)] = File.open(xml, "r").read
+    end
 
     # Notifier instance
     @notifier = Notifier.new(:syslog, @logger)
@@ -65,29 +76,46 @@ class NotifierTest < Test::Unit::TestCase
 
   def test_decode_base64
 
-    assert_equal(@data, @notifier.decode_base64(@data64), "Encoded and decoded data should match!")
-    assert_not_equal(@data, @notifier.decode_base64(@data64_wrong), "Random and decoded data should not match!")
+    @data64.each do |name, encoded|
+      assert_equal(@data[name], @notifier.decode_base64(encoded), "Encoded and decoded data should match!")
+    end
+
+    @data64.each do |name, encoded|
+      @data.each do |named, xml|
+        assert_not_equal(xml, @notifier.decode_base64(encoded), "Random and decoded data should not match!") unless name.eql? named
+      end
+    end
+
     assert_empty(@notifier.decode_base64(""))
 
   end
 
   def test_read_template
 
-    assert_instance_of(VMTemplate, @notifier.read_template(@data))
-    assert_raise Nokogiri::XML::SyntaxError do
-      @notifier.read_template(@data_wrong)
+    @data.each do |name, xml|
+      assert_instance_of(VMTemplate, read_template = @notifier.read_template(xml))
+      assert_equal(460, read_template.ID)
+    end    
+
+    @data_wrong.each do |name, malformed|
+      assert_raise Nokogiri::XML::SyntaxError do
+        @notifier.read_template(malformed)
+      end
     end
-    assert_equal(439, @notifier.read_template(@data).ID)
 
   end
 
   def test_map_user_identity
+
     assert_equal("oneadmin", @notifier.map_user_identity("oneadmin"))
+  
   end
 
   def test_prepare_notification
+  
     assert_raise ArgumentError do
       @notifier.prepare_notification(:create, "oneadmin", nil)
     end
+  
   end
 end
