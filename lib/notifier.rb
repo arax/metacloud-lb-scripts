@@ -28,12 +28,13 @@ class Notifier
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new
     @logger = logger
-    @mapfile = YAML.load(File.read(mapfile)) unless mapfile.nil?
+    @mapfile = YAML.load(mapfile) unless mapfile.nil? or mapfile.empty?
 
   end
 
   def notify(message)
 
+    raise ArgumentError, "Message should not be empty!" if message.nil? or message.empty?
     @logger.debug "Sending a message to " + @service.class.name
     @service.write message
  
@@ -41,9 +42,11 @@ class Notifier
 
   def map_user_identity(user_name)
 
+    raise ArgumentError, "Username should not be empty!" if user_name.nil? or user_name.empty?
     @logger.debug "Looking for global identity of user " + user_name
-    unless @mapfile.nil? or @mapfile.has_key? user_name
-      @mapfile[user_name] 
+
+    unless @mapfile.nil? or not @mapfile.has_key? user_name
+      @mapfile[user_name]
     else
       user_name
     end
@@ -52,7 +55,7 @@ class Notifier
 
   def prepare_notification(vm_state, user_identity, vm_template)
 
-    raise ArgumentError, "VM should not be empty!" if vm_template.nil?
+    raise ArgumentError, "VM state, user identity and VM template should not be empty!" if vm_template.nil? or vm_state.nil? or user_identity.nil? or user_identity.empty?
     @logger.debug "Constructing " + vm_state.to_s.upcase + " notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name
 
     @service.prepare_message vm_state, user_identity, vm_template
@@ -61,6 +64,7 @@ class Notifier
 
   def decode_base64(encoded_string)
 
+    raise ArgumentError, "Base64 encoded string should not be nil!" if encoded_string.nil?
     @logger.debug "Decoding BASE64: \n" + encoded_string
     Base64.decode64 encoded_string
 
@@ -68,6 +72,7 @@ class Notifier
 
   def read_template(vm_template_xml)
 
+    raise ArgumentError, "XML template should not be empty!" if vm_template_xml.nil? or vm_template_xml.empty?
     @logger.debug "Parsing XML template: \n" + vm_template_xml
     vm_template = VMTemplate.parse vm_template_xml, :single => true
 
