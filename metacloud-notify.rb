@@ -30,7 +30,9 @@ logger = Lumberjack::Logger.new
 logger.progname = 'MetaCloudNotifier'
 logger.level = Lumberjack::Severity::DEBUG if options.debug
 
-notifier = Notifier.new options.service, logger
+notifier = Notifier.new options.service, logger, File.read(options.mapfile)
+
+logger.info "Starting ..."
 
 vm_template_xml = notifier.decode_base64 options.vm_template
 vm_info = notifier.read_template vm_template_xml
@@ -39,3 +41,5 @@ vm_user = notifier.map_user_identity vm_info.UNAME
 vm_notification = notifier.prepare_notification options.vm_state, vm_user, vm_info
 
 notifier.notify vm_notification
+
+logger.info "Shutting down ..."

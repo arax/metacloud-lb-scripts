@@ -23,7 +23,7 @@ class Notifier
 
   def initialize(service, logger, mapfile = nil)
 
-    logger.debug "Initializing notifier for " + service.to_s.capitalize
+    logger.info "Initializing notifier for #{service.to_s.capitalize}"
 
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new
@@ -35,7 +35,8 @@ class Notifier
   def notify(message)
 
     raise ArgumentError, "Message should not be empty!" if message.nil? or message.empty?
-    @logger.debug "Sending a message to " + @service.class.name
+    @logger.info "Sending a message to #{@service.class.name}"
+    @logger.debug "Message: #{message}"
     @service.write message
  
   end
@@ -43,40 +44,47 @@ class Notifier
   def map_user_identity(user_name)
 
     raise ArgumentError, "Username should not be empty!" if user_name.nil? or user_name.empty?
-    @logger.debug "Looking for global identity of user " + user_name
+    @logger.info "Looking for global identity of user #{user_name}"
 
-    unless @mapfile.nil? or not @mapfile.has_key? user_name
-      @mapfile[user_name]
-    else
-      user_name
-    end
+    identity = user_name
+    identity = @mapfile[user_name] unless @mapfile.nil? or not @mapfile.has_key? user_name
+
+    @logger.debug "Found mapping #{user_name} => #{identity}"
+    identity
 
   end
 
   def prepare_notification(vm_state, user_identity, vm_template)
 
     raise ArgumentError, "VM state, user identity and VM template should not be empty!" if vm_template.nil? or vm_state.nil? or user_identity.nil? or user_identity.empty?
-    @logger.debug "Constructing " + vm_state.to_s.upcase + " notification message for " + vm_template.NAME + " which will be sent to " + @service.class.name
+    @logger.info "Constructing #{vm_state.to_s.upcase} notification message for #{vm_template.NAME} which will be sent to #{@service.class.name}"
 
-    @service.prepare_message vm_state, user_identity, vm_template
+    notification = @service.prepare_message vm_state, user_identity, vm_template
+
+    @logger.debug "Notification: #{notification}"
+    notification
 
   end
 
   def decode_base64(encoded_string)
 
     raise ArgumentError, "Base64 encoded string should not be nil!" if encoded_string.nil?
-    @logger.debug "Decoding BASE64: \n" + encoded_string
-    Base64.decode64 encoded_string
+    @logger.info "Decoding Base64"
+
+    decoded_string = Base64.decode64 encoded_string
+
+    @logger.debug "BASE64: #{encoded_string}\n XML: #{decoded_string}"
+    decoded_string
 
   end
 
   def read_template(vm_template_xml)
 
     raise ArgumentError, "XML template should not be empty!" if vm_template_xml.nil? or vm_template_xml.empty?
-    @logger.debug "Parsing XML template: \n" + vm_template_xml
+    @logger.info "Parsing XML template"
     vm_template = VMTemplate.parse vm_template_xml, :single => true
 
-    @logger.debug "Parsed data structure for VM with ID: " + vm_template.ID.to_s
+    @logger.debug "Parsed data structure for VM with ID: #{vm_template.ID.to_s}"
     vm_template
 
   end

@@ -8,6 +8,7 @@ class OptparseNotifier
     options = OpenStruct.new 
     options.service = :syslog
     options.debug = false
+    options.mapfile = nil
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: metacloud-notify.rb [OPTIONS]"
@@ -15,7 +16,7 @@ class OptparseNotifier
       opts.separator ""
       opts.separator "Options:"
 
-      opts.on("--vm-state [STATE]", [:create, :CREATE, :prolog, :PROLOG, :running, :RUNNING, :shutdown, :SHUTDOWN, :stop, :STOP, :done, :DONE, :failed, :FAILED], "State of the VM, i.e. name of the ON hook that has been triggered") do |vm_state|
+      opts.on("--vm-state [STATE]", [:create, :CREATE, :prolog, :PROLOG, :running, :RUNNING, :shutdown, :SHUTDOWN, :stop, :STOP, :done, :DONE, :failed, :FAILED], "Name of the ON hook that has been triggered, mandatory") do |vm_state|
         options.vm_state = vm_state.downcase
       end
 
@@ -25,6 +26,11 @@ class OptparseNotifier
 
       opts.on("--service-to-notify [SERVICE]", [:syslog, :metalb], "Service you wish to notify [syslog|metalb], defaults to syslog") do |service|
         options.service = service
+      end
+
+      opts.on("--mapfile [PATH_TO_FILE]", String, "Path to a mapfile in YAML format") do |mapfile|
+        raise ArgumentError, "The chosen mapfile does not exist or it is not readable" unless File.exists? mapfile or File.readable? mapfile
+        options.mapfile = mapfile
       end
 
       opts.on_tail("--debug", "Enable debugging messages") do |debug|
@@ -38,14 +44,14 @@ class OptparseNotifier
 
       opts.on_tail("--version", "Show version") do
         begin
-	  file = File.new(File.expand_path("..", __FILE__) + '/../VERSION', "r")
-	  line = file.gets
+	        file = File.new(File.expand_path("..", __FILE__) + '/../VERSION', "r")
+	        line = file.gets
 
-          puts line      
+          puts line
 
-	  file.close
+	        file.close
         rescue
-	  puts 'UNKNOWN'
+	        puts 'UNKNOWN'
         end
 
         exit!
