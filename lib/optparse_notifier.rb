@@ -17,7 +17,7 @@ class OptparseNotifier
       opts.separator "Options:"
 
       opts.on("--vm-state [STATE]", [:create, :CREATE, :prolog, :PROLOG, :running, :RUNNING, :shutdown, :SHUTDOWN, :stop, :STOP, :done, :DONE, :failed, :FAILED], "Name of the ON hook that has been triggered, mandatory") do |vm_state|
-        options.vm_state = vm_state.downcase
+        options.vm_state = vm_state.to_s.downcase.to_sym
       end
 
       opts.on("--vm-template [TEMPLATE]", String, "Base64 encoded XML of the VM template, mandatory") do |vm_template|
