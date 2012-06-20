@@ -30,7 +30,8 @@ logger = Lumberjack::Logger.new
 logger.progname = 'MetaCloudNotifier'
 logger.level = Lumberjack::Severity::DEBUG if options.debug
 
-notifier = Notifier.new options.service, logger, File.read(options.mapfile)
+mapfile = File.read(options.mapfile) unless options.mapfile.nil?
+notifier = Notifier.new options.service, logger, mapfile
 
 logger.info "Starting ..."
 
