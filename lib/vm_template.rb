@@ -34,7 +34,9 @@ class VMTemplate
   element :CPU, Integer
   element :NET_TX, Integer
   element :NET_RX, Integer
-  has_one :HOSTNAME, String, :xpath => 'TEMPLATE/CONTEXT/HOSTNAME'
+  element :REQ_VCPU, Integer, :xpath => 'TEMPLATE/VCPU'
+  element :REQ_MEMORY, Integer, :xpath => 'TEMPLATE/MEMORY'
+  element :HOSTNAME, String, :xpath => 'TEMPLATE/CONTEXT/HOSTNAME'
   has_many :IMAGES, String, :xpath => 'TEMPLATE/DISK/IMAGE'
   has_many :IPS, String, :xpath => 'TEMPLATE/NIC/IP'
   has_many :HOSTS, String, :xpath => 'HISTORY_RECORDS/HISTORY/HOSTNAME'
