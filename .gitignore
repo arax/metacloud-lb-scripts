@@ -5,3 +5,6 @@
 
 # VIM temp files
 *.swp
+
+# data files
+metacloud-notify.sqlite

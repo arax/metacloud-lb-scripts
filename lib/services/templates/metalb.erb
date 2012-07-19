@@ -1,1 +1,39 @@
-TODO
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/xparak/stage/usr/lib64
+export GLITE_WMS_LOG_DESTINATION=scientific.civ.zcu.cz:9402
+<%
+case
+when vm_state == :create
+%>
+~/stage/usr/lib64/glite-lb/examples/glite-lb-job_reg -m scientific.civ.zcu.cz:9400 -s application -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
+<%
+when vm_state == :prolog
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<% vm_template.IMAGES.each do |image| %><%= image %>, <% end %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --owner <%= user_identity %>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMHost --hostname "<% vm_template.HOSTS.each do |host| %><%= host %>, <% end %>"
+<%
+when vm_state == :running
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMRunning
+<%
+when vm_state == :shutdown
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMShutdown
+<%
+when vm_state == :stop
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMStop
+<%
+when vm_state == :done
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code OK --usage "TODO"
+<%
+when vm_state == :failed
+%>
+~/stage/usr/bin/glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code FAILURE --usage "TODO"
+<%
+else
+%>
+/bin/false
+<%
+end
+%>

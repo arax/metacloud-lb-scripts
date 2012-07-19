@@ -8,6 +8,8 @@ GEM
     nokogiri-happymapper (0.5.1)
       nokogiri (~> 1.4)
     require_all (1.2.1)
+    sequel (3.37.0)
+    sqlite3 (1.3.6)
     test-unit (2.4.7)
 
 PLATFORMS
@@ -18,4 +20,6 @@ DEPENDENCIES
   lumberjack_syslog_device
   nokogiri-happymapper
   require_all
+  sequel
+  sqlite3
   test-unit
