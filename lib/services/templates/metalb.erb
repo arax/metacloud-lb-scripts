@@ -6,8 +6,8 @@ glite-lb-job_reg -m scientific.civ.zcu.cz:9400 -s application -v | tail -n 2 | g
 <%
 when ((vm_state == :prolog) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<% vm_template.IMAGES.each do |image| %><%= image %>, <% end %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --owner <%= user_identity %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMHost --hostname "<% vm_template.HOSTS.each do |host| %><%= host %>, <% end %>"
+glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<%= vm_template.IMAGES.first %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --owner "<%= user_identity %>" --hostname "<%= vm_template.IPS.first %>"
+glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMHost --hostname "<%= vm_template.HOSTS.last %>"
 <%
 when ((vm_state == :running) and (not edg_jobid.empty?))
 %>

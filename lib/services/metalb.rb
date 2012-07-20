@@ -59,7 +59,7 @@ class MetalbService
     stdout.close
     stderr.close
 
-    if exit_status.pid > 0
+    if exit_status.exitstatus > 0
       @logger.error "[#{@notifier_name}] #{cmd_err_out}" unless @logger.nil?
     end
 
