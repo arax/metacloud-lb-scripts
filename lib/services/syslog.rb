@@ -18,7 +18,12 @@ require 'erb'
 
 class SyslogService
 
+  attr_writer :logger
+  attr_reader :notifier_name
+
   def initialize(notifier_name = "OpenNebulaSyslogNotifier")
+
+    @notifier_name = notifier_name
 
     @syslog = Lumberjack::Logger.new(Lumberjack::SyslogDevice.new({:facility => Syslog::LOG_SYSLOG}))
     @syslog.progname = notifier_name
@@ -27,6 +32,7 @@ class SyslogService
 
   def write(message)
 
+    @logger.debug "[#{@notifier_name}] writting:\n#{message}" unless @logger.nil?
     @syslog.info message
 
   end
@@ -34,7 +40,11 @@ class SyslogService
   def prepare_message(vm_state, user_identity, vm_template)
 
     msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/syslog.erb").read
-    msg_template.result(binding)
+    message = msg_template.result(binding)
+
+    @logger.debug "[#{@notifier_name}] constructed:\n#{message}" unless @logger.nil?
+
+    message
 
   end
 

@@ -27,7 +27,10 @@ class Notifier
 
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new
+
     @logger = logger
+    @service.logger = logger
+    
     @mapfile = YAML.load(mapfile) unless mapfile.nil? or mapfile.empty?
 
   end
@@ -36,7 +39,6 @@ class Notifier
 
     raise ArgumentError, "Message should not be empty!" if message.nil? or message.empty?
     @logger.info "Sending a message to #{@service.class.name}"
-    @logger.debug "Message: #{message}"
     @service.write message
  
   end
@@ -61,7 +63,6 @@ class Notifier
 
     notification = @service.prepare_message vm_state, user_identity, vm_template
 
-    @logger.debug "Notification: #{notification}"
     notification
 
   end
