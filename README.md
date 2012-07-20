@@ -1,9 +1,17 @@
-LB scripts for OpenNebula v3.4
+LB scripts for OpenNebula v3.x
 ==============================
 
 Description
 -----------
 Logging and Bookkeeping (LB) scripts compatible with OpenNebula's VM_HOOKs.
+
+Installation
+------------
+* Ruby 1.9.2+ => 'rvm install 1.9.2 && rvm use 1.9.2 --default'
+* Bundler => 'gem install bundler'
+* Gems => 'bundle install'
+* Working glite-lb-* client utilities with custom OpenNebula support (not included)
+* Working tail, grep, awk and tr utilities
 
 Usage
 -----
@@ -24,4 +32,10 @@ VM_HOOK = [
    on        = "CREATE",
    command   = "/opt/opennebula/bin/metacloud-notify.rb",
    arguments = "--vm-state CREATE --vm-template $TEMPLATE --service-to-notify syslog" ]
+
+VM_HOOK = [
+   name      = "log_create",
+   on        = "CREATE",
+   command   = "/opt/opennebula/bin/metacloud-notify.rb",
+   arguments = "--vm-state CREATE --vm-template $TEMPLATE --service-to-notify metalb" ]
 ~~~
