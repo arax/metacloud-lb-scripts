@@ -15,6 +15,7 @@
 require 'erb'
 require 'open3'
 require 'sequel'
+require 'resolv'
 
 class MetalbService
 
@@ -26,8 +27,12 @@ class MetalbService
     @notifier_name = notifier_name
 
     # we need a DB for VMID <-> JOBID mappings
-    @db = Sequel.sqlite 'metacloud-notify.sqlite'
-    
+    unless ENV['ONE_LOCATION'].empty?
+      @db = Sequel.sqlite "#{ENV['ONE_LOCATION']}/db/metacloud-notify.sqlite"
+    else  
+      @db = Sequel.sqlite 'metacloud-notify.sqlite'
+    end
+
     # create lb_jobs table if there isn't one already available
     unless @db.tables.include? :lb_jobs
      @db.create_table :lb_jobs do
@@ -40,29 +45,34 @@ class MetalbService
 
   def write(message)
 
+    # message for LB is a shell command, we have to run it
     @logger.debug "[#{@notifier_name}] writting:\n#{message}" unless @logger.nil?
     stdin, stdout, stderr, wait_thr = Open3.popen3(message)
 
+    # get the response from stdout and insert a new mapping if this was job_reg
     cmd_out = stdout.read.strip
     putMapping(@current_vmid, cmd_out) if @current_state == :create and cmd_out.start_with? "https://" 
 
+    # make sure that everything went as expected
     cmd_err_out = stderr.read
-
     exit_status = wait_thr.value
 
-    @logger.debug "[#{@notifier_name}] PID:\n#{exit_status.pid}" unless @logger.nil?
+    @logger.debug "[#{@notifier_name}] PID: #{exit_status.pid}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STDOUT:\n#{cmd_out}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STDERR:\n#{cmd_err_out}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STATUS: #{exit_status.exitstatus}" unless @logger.nil?
 
+    # clean-up
     stdin.close
     stdout.close
     stderr.close
 
+    # if something went wrong, report it
     if exit_status.exitstatus > 0
       @logger.error "[#{@notifier_name}] #{cmd_err_out}" unless @logger.nil?
     end
 
+    # DONE is the last state, DB clean-up
     delMapping(@current_vmid) if @current_state == :done
 
     exit_status.exitstatus
@@ -71,14 +81,27 @@ class MetalbService
 
   def prepare_message(vm_state, user_identity, vm_template)
 
+    # store some variables in attributes for subsequent use in write
     @current_vmid = vm_template.ID
     @current_state = vm_state
 
+    # resolv the first VM IP address to a hostname
+    vm_hostname = 'UNKNOWN'
+    
+    begin
+      vm_hostname = Resolv.getname(vm_template.IPS.first) unless vm_template.IPS.nil?
+    rescue
+      @logger.error "[#{@notifier_name}] couldn't resolve #{vm_template.IPS.first} to a valid hostname" unless @logger.nil?
+    end
+
+    # get vm -> lbjob mapping if there is one
     edg_jobid = getMapping(@current_vmid)
     edg_jobid = "" if edg_jobid.nil?    
 
+    # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
 
+    # use templates to generate the message
     msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/metalb.erb").read
     message = msg_template.result(binding)
 
