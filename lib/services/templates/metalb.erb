@@ -2,7 +2,7 @@
 case
 when vm_state == :create
 %>
-glite-lb-job_reg -m scientific.civ.zcu.cz:9400 -s application -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
+glite-lb-job_reg -m $GLITE_LB_DESTINATION -s application -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
 <%
 when ((vm_state == :prolog) and (not edg_jobid.empty?))
 %>

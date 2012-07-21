@@ -16,6 +16,7 @@ require 'erb'
 require 'open3'
 require 'sequel'
 require 'resolv'
+require 'chronic_duration'
 
 class MetalbService
 
@@ -44,6 +45,9 @@ class MetalbService
   end
 
   def write(message)
+
+    # check credentials
+    initGlobusProxy unless validGlobusProxy
 
     # message for LB is a shell command, we have to run it
     @logger.debug "[#{@notifier_name}] writting:\n#{message}" unless @logger.nil?
@@ -137,6 +141,72 @@ class MetalbService
 
     @logger.debug "[#{@notifier_name}] deleting a mapping for #{vmid}" unless @logger.nil?
     @db[:lb_jobs].filter(:vmid => vmid).delete
+
+  end
+
+  ## TODO clean-up, refactor proxy methods  ##
+
+  def validGlobusProxy
+
+    @logger.debug "[#{@notifier_name}] checking globus-proxy" unless @logger.nil?
+    proxy_info = "grid-proxy-info | grep 'timeleft' | awk -F ' : ' '{print $2}'"
+    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_info)
+
+    valid_for = stdout.read
+
+    stdin.close
+    stdout.close
+    stderr.close
+    
+    status = false
+    
+    if wait_thr.value.exitstatus == 0 and not valid_for.empty?
+      @logger.debug "[#{@notifier_name}] globus-proxy is valid for another #{valid_for}" unless @logger.nil?
+      status = true
+      status = false if ChronicDuration::parse(valid_for) < 60
+    end
+
+    status
+
+  end
+
+  def initGlobusProxy
+
+    @logger.debug "[#{@notifier_name}] starting globus-proxy" unless @logger.nil?
+    proxy_init = "grid-proxy-init"
+    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_init)
+
+    err_out = stderr.read
+
+    stdin.close
+    stdout.close
+    stderr.close
+
+    status = false
+    
+    if wait_thr.value.exitstatus == 0
+      status = true
+    else
+      @logger.error "[#{@notifier_name}] globus-proxy-init failed with #{err_out}" unless @logger.nil?
+    end
+
+    status
+
+  end
+
+  def destroyGlobusProxy
+
+    proxy_destroy = "grid-proxy-destroy"
+    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_destroy)
+
+    stdin.close
+    stdout.close
+    stderr.close
+
+    status = false
+    status = true if wait_thr.value.exitstatus == 0
+
+    status
 
   end
 

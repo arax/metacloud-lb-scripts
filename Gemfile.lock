@@ -1,12 +1,15 @@
 GEM
   remote: http://rubygems.org/
   specs:
+    chronic_duration (0.9.6)
+      numerizer (~> 0.1.1)
     lumberjack (1.0.2)
     lumberjack_syslog_device (1.0.0)
       lumberjack (~> 1.0)
     nokogiri (1.5.3)
     nokogiri-happymapper (0.5.1)
       nokogiri (~> 1.4)
+    numerizer (0.1.1)
     require_all (1.2.1)
     sequel (3.37.0)
     sqlite3 (1.3.6)
@@ -16,6 +19,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  chronic_duration
   lumberjack
   lumberjack_syslog_device
   nokogiri-happymapper
