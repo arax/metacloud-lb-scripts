@@ -14,6 +14,7 @@ Installation
 * Working grid-proxy-* client utilities => e.g. globus-proxy-utils package in Debian
 * Working tail, grep, awk and tr utilities
 * ENV variables
+
 ~~~
 export GLITE_WMS_LOG_DESTINATION=HOSTNAME:PORT
 export GLITE_LB_DESTINATION=HOSTNAME:PORT
