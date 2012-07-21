@@ -1,9 +1,9 @@
-LB scripts for OpenNebula v3.x
+GLite LB scripts for OpenNebula v3.x
 ==============================
 
 Description
 -----------
-Logging and Bookkeeping (LB) scripts compatible with OpenNebula's VM_HOOKs.
+GLite Logging and Bookkeeping (LB) scripts compatible with OpenNebula.
 
 Installation
 ------------
@@ -11,12 +11,18 @@ Installation
 * Bundler => 'gem install bundler'
 * Gems => 'bundle install'
 * Working glite-lb-* client utilities with custom OpenNebula support (not included)
+* Working grid-proxy-* client utilities => e.g. globus-proxy-utils package in Debian
 * Working tail, grep, awk and tr utilities
+* ENV variables
+~~~
+export GLITE_WMS_LOG_DESTINATION=HOSTNAME:PORT
+export GLITE_LB_DESTINATION=HOSTNAME:PORT
+~~~
 
 Usage
 -----
 ~~~
-[PATH]/metacloud-notify.rb --vm-template BASE64_XML_TEMPLATE --vm-state HOOK_NAME --service-to-notify SERVICE [--debug] [--mapfile YAML_FILE]
+[PATH/]metacloud-notify.rb --vm-template BASE64_XML_TEMPLATE --vm-state HOOK_NAME --service-to-notify SERVICE [--debug] [--mapfile YAML_FILE]
 
 SERVICE := syslog | metalb
 HOOK_NAME := CREATE | PROLOG | RUNNING | SHUTDOWN | STOP | DONE | FAILED
