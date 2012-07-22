@@ -163,7 +163,9 @@ class MetalbService
     if wait_thr.value.exitstatus == 0 and not valid_for.empty?
       @logger.debug "[#{@notifier_name}] globus-proxy is valid for another #{valid_for}" unless @logger.nil?
       status = true
-      status = false if ChronicDuration::parse(valid_for) < 60
+      
+      parsed_valid_for = ChronicDuration::parse(valid_for)
+      status = false if parsed_valid_for.nil? or parsed_valid_for < 60
     end
 
     status
