@@ -40,5 +40,7 @@ class VMTemplate
   has_many :IMAGES, String, :xpath => 'TEMPLATE/DISK/IMAGE'
   has_many :IPS, String, :xpath => 'TEMPLATE/NIC/IP'
   has_many :HOSTS, String, :xpath => 'HISTORY_RECORDS/HISTORY/HOSTNAME'
+  has_many :START_TIME, Integer, :xpath => 'HISTORY_RECORDS/HISTORY/STIME'
+  has_many :END_TIME, Integer, :xpath => 'HISTORY_RECORDS/HISTORY/ETIME'
 
 end

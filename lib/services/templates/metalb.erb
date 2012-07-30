@@ -23,11 +23,11 @@ glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= e
 <%
 when ((vm_state == :done) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code OK --usage "TODO"
+glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code OK --usage "<%= vm_usage %>"
 <%
 when ((vm_state == :failed) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code FAILURE --usage "TODO"
+glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code FAILURE --usage "<%= vm_usage %>"
 <%
 else
 %>
