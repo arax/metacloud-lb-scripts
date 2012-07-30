@@ -26,7 +26,17 @@ require 'optparse_notifier'
 
 options = OptparseNotifier.parse ARGV
 
-logger = Lumberjack::Logger.new
+case
+  when options.log_to === :stdout
+    logger = Lumberjack::Logger.new
+  when options.log_to === :file
+    logger = Lumberjack::Logger.new(options.log_to_file)
+  when options.log_to === :stderr
+    logger = Lumberjack::Logger.new(STDERR)
+  else
+    raise ArgumentError "Unknown logging device!"
+end
+
 logger.progname = 'MetaCloudNotifier'
 logger.level = Lumberjack::Severity::DEBUG if options.debug
 

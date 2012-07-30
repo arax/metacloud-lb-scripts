@@ -9,6 +9,8 @@ class OptparseNotifier
     options.service = :syslog
     options.debug = false
     options.mapfile = nil
+    options.log_to = :stdout
+    options.log_to_file = "log/metacloud-notify.log"
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: metacloud-notify.rb [OPTIONS]"
@@ -31,6 +33,14 @@ class OptparseNotifier
       opts.on("--mapfile [PATH_TO_FILE]", String, "Path to a mapfile in YAML format") do |mapfile|
         raise ArgumentError, "The chosen mapfile does not exist or it is not readable" unless File.exists? mapfile or File.readable? mapfile
         options.mapfile = mapfile
+      end
+
+      opts.on("--log-to [OUTPUT]", [:stdout, :stderr, :file], "Logger type [stdout|stderr|file], defaults to stdout") do |log_to|
+        options.log_to = log_to
+      end
+
+      opts.on("--log-to-file [FILE]", String, "Log file, defaults to 'log/metacloud-notify.log'") do |log_to_file|
+        options.log_to_file = log_to_file
       end
 
       opts.on_tail("--debug", "Enable debugging messages") do |debug|
@@ -67,7 +77,7 @@ class OptparseNotifier
       exit!
     end
 
-    mandatory = [:service, :vm_template, :vm_state]
+    mandatory = [:service, :vm_template, :vm_state, :log_to, :log_to_file]
     options_hash = options.marshal_dump
 
     missing = mandatory.select{ |param| options_hash[param].nil? }

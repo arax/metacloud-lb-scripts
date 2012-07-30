@@ -11,3 +11,6 @@
 
 # data files
 metacloud-notify.sqlite
+
+# log files
+*.log
