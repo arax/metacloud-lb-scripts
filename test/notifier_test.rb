@@ -126,7 +126,23 @@ class NotifierTest < Test::Unit::TestCase
     assert_raise ArgumentError do
       @notifier.prepare_notification :create, "oneadmin", nil
     end
+
+    assert_raise ArgumentError do
+      @notifier.prepare_notification :create, "oneadmin", "NOTVMTEMPLATE", nil
+    end
   
+  end
+
+  def test_prepare_usage
+
+    assert_raise ArgumentError do
+      @notifier.prepare_usage nil, nil
+    end
+
+    assert_raise ArgumentError do
+      @notifier.prepare_notification "", ""
+    end
+
   end
 
   def test_notify

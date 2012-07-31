@@ -83,7 +83,7 @@ class MetalbService
 
   end
 
-  def prepare_message(vm_state, user_identity, vm_template)
+  def prepare_message(vm_state, user_identity, vm_template, vm_usage)
 
     # store some variables in attributes for subsequent use in write
     @current_vmid = vm_template.ID
@@ -102,10 +102,6 @@ class MetalbService
     edg_jobid = getMapping(@current_vmid)
     edg_jobid = "" if edg_jobid.nil?    
     
-    # pre-compute usage (END_TIME - START_TIME for each phy. host)
-    vm_usage = "VM is still running"
-    vm_usage = prepare_usage(vm_template) if @current_state == :done
-
     # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
 
@@ -146,32 +142,6 @@ class MetalbService
     @logger.debug "[#{@notifier_name}] deleting a mapping for #{vmid}" unless @logger.nil?
     @db[:lb_jobs].filter(:vmid => vmid).delete
 
-  end
-
-  def prepare_usage(vm_template)
-
-    @logger.debug "[#{@notifier_name}] computing usage for #{@current_vmid}" unless @logger.nil?
-    
-    seq_num = 0
-    seq_num = vm_template.START_TIME.length unless vm_template.START_TIME.nil? 
-
-    return "Usage record is malformed!" if seq_num == 0 or vm_template.END_TIME.length != seq_num
-
-    @logger.debug "[#{@notifier_name}] #{@current_vmid} has #{seq_num} usage records" unless @logger.nil?
-    seq_num = seq_num - 1
-    sum = 0
-
-    (0..seq_num).each do |index|
-      runtime = vm_template.END_TIME[index] - vm_template.START_TIME[index]
-      sum = sum + runtime unless runtime < 0
-    end
-
-    usage = ChronicDuration::output(sum, :format => :short)
- 
-    @logger.debug "[#{@notifier_name}] #{@current_vmid} has been running #{usage}" unless @logger.nil?
-
-    usage
-    
   end
 
   ## TODO clean-up, refactor proxy methods  ##
