@@ -18,6 +18,8 @@ require 'sequel'
 require 'resolv'
 require 'chronic_duration'
 
+require 'notifier_error'
+
 class MetalbService
 
   attr_reader :logger
@@ -192,6 +194,7 @@ class MetalbService
       status = true
     else
       @logger.error "[#{@notifier_name}] globus-proxy-init failed with #{err_out}" unless @logger.nil?
+      raise NotifierError, "Failed to initialize globus-proxy! #{err_out}"
     end
 
     status

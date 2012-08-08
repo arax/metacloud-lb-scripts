@@ -42,15 +42,16 @@ logger.progname = 'MetaCloudNotifier'
 logger.level = Lumberjack::Severity::DEBUG if options.debug
 
 mapfile = File.read(options.mapfile) unless options.mapfile.nil?
-notifier = Notifier.new options.service, logger, mapfile
 
 logger.info "Starting ..."
 
 begin
+  notifier = Notifier.new options.service, logger, mapfile
   notifier.notify options.vm_state, options.vm_template
   logger.info "Notification successful"
 rescue Exception => e
   logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
+  logger.debug "Error details: #{e.backtrace}"
 end
 
 logger.info "Shutting down ..."

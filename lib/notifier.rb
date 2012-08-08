@@ -56,7 +56,6 @@ class Notifier
     rescue Exception => e
 
       @logger.error "Notifier failed to prepare the notification message. Error: #{e.message}"
-      @logger.debug "Error details: #{e.backtrace.inspect}"
       raise NotifierError, "#{e.message}"
 
     end
