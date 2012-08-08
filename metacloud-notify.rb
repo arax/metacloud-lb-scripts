@@ -23,6 +23,7 @@ require 'bundler/setup'
 require 'lumberjack'
 require 'notifier'
 require 'optparse_notifier'
+require 'notifier_error'
 
 options = OptparseNotifier.parse ARGV
 
@@ -45,15 +46,11 @@ notifier = Notifier.new options.service, logger, mapfile
 
 logger.info "Starting ..."
 
-vm_template_xml = notifier.decode_base64 options.vm_template
-vm_info = notifier.read_template vm_template_xml
-
-vm_user = notifier.map_user_identity vm_info.UNAME
-
-vm_usage = notifier.prepare_usage options.vm_state, vm_info 
-
-vm_notification = notifier.prepare_notification options.vm_state, vm_user, vm_info, vm_usage
-
-notifier.notify vm_notification
+begin
+  notifier.notify options.vm_state, options.vm_template
+  logger.info "Notification successful"
+rescue Exception => e
+  logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
+end
 
 logger.info "Shutting down ..."

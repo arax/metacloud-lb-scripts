@@ -148,11 +148,11 @@ class NotifierTest < Test::Unit::TestCase
   def test_notify
 
     assert_raise ArgumentError do
-      @notifier.notify ""
+      @notifier.notify "", nil
     end
 
     assert_raise ArgumentError do
-      @notifier.notify nil
+      @notifier.notify nil, ""
     end
 
   end

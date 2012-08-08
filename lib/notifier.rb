@@ -17,6 +17,7 @@ require 'base64'
 require 'chronic_duration'
 
 require 'vm_template'
+require 'notifier_error'
 
 require_all File.expand_path("..", __FILE__) + '/services/'
 
@@ -26,22 +27,42 @@ class Notifier
 
     logger.info "Initializing notifier for #{service.to_s.capitalize}"
 
-    classname = service.to_s.capitalize + 'Service'
-    @service = Kernel.const_get(classname).new
-
     @logger = logger
-    @service.logger = logger
-    
     @mapfile = YAML.load(mapfile) unless mapfile.nil? or mapfile.empty?
+
+    classname = service.to_s.capitalize + 'Service'
+    @service = Kernel.const_get(classname).new nil, logger
 
   end
 
-  def notify(message)
+  def notify(vm_state, vm_template)
 
-    raise ArgumentError, "Message should not be empty!" if message.nil? or message.empty?
+    raise ArgumentError, "VM template should not be empty!" if vm_template.nil? or vm_template.empty?
+    raise ArgumentError, "VM state should not be empty!" if vm_state.nil?
     @logger.info "Sending a message to #{@service.class.name}"
-    @service.write message
- 
+
+
+    begin
+
+      vm_template_xml = decode_base64 vm_template
+      vm_info = read_template vm_template_xml
+
+      vm_user = map_user_identity vm_info.UNAME
+
+      vm_usage = prepare_usage vm_state, vm_info
+
+      vm_notification = prepare_notification vm_state, vm_user, vm_info, vm_usage
+
+    rescue Exception => e
+
+      @logger.error "Notifier failed to prepare the notification message. Error: #{e.message}"
+      @logger.debug "Error details: #{e.backtrace.inspect}"
+      raise NotifierError, "#{e.message}"
+
+    end
+
+    @service.write vm_notification
+
   end
 
   def map_user_identity(user_name)
@@ -65,6 +86,7 @@ class Notifier
 
     notification = @service.prepare_message vm_state, user_identity, vm_template, vm_usage
 
+    @logger.debug "Notification message will contain the following: #{notification}"
     notification
 
   end

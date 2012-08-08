@@ -20,12 +20,14 @@ require 'chronic_duration'
 
 class MetalbService
 
-  attr_writer :logger
+  attr_reader :logger
   attr_reader :notifier_name
 
-  def initialize(notifier_name = "OpenNebulaMetaLBNotifier")
+  def initialize(notifier_name, logger)
     
-    @notifier_name = notifier_name
+    @notifier_name = notifier_name ||  "OpenNebulaMetaLBNotifier"
+
+    @logger = logger
 
     # we need a DB for VMID <-> JOBID mappings
     unless ENV['ONE_LOCATION'].empty?
