@@ -21,6 +21,8 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'lumberjack'
+require 'yaml'
+
 require 'notifier'
 require 'optparse_notifier'
 require 'notifier_error'
@@ -51,7 +53,7 @@ begin
   logger.info "Notification successful"
 rescue Exception => e
   logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
-  logger.debug "Error details: #{e.backtrace}"
+  logger.debug "Error details: #{y e.backtrace}"
 end
 
 logger.info "Shutting down ..."
