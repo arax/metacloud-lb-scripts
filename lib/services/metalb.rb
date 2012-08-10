@@ -17,6 +17,8 @@ require 'open3'
 require 'sequel'
 require 'resolv'
 require 'chronic_duration'
+require 'timeout'
+require 'date'
 
 require 'notifier_error'
 
@@ -24,6 +26,10 @@ class MetalbService
 
   attr_reader :logger
   attr_reader :notifier_name
+
+  SHELL_CMD_TIMEOUT = 10
+  SHELL_CMD_TIMEOUT_LONG = SHELL_CMD_TIMEOUT * 2
+  PROXY_REINIT_DEADLINE = 60
 
   def initialize(notifier_name, logger)
     
@@ -53,27 +59,43 @@ class MetalbService
     # check credentials
     initGlobusProxy unless validGlobusProxy
 
-    # message for LB is a shell command, we have to run it
     @logger.debug "[#{@notifier_name}] writting:\n#{message}" unless @logger.nil?
-    stdin, stdout, stderr, wait_thr = Open3.popen3(message)
 
-    # get the response from stdout and insert a new mapping if this was job_reg
-    cmd_out = stdout.read.strip
-    putMapping(@current_vmid, cmd_out) if @current_state == :create and cmd_out.start_with? "https://" 
+    cmd_out = nil
+    cmd_err_out = nil
+    exit_status = nil
 
-    # make sure that everything went as expected
-    cmd_err_out = stderr.read
-    exit_status = wait_thr.value
+    begin
+      Timeout::timeout(SHELL_CMD_TIMEOUT_LONG){
+        # message for LB is a shell command, we have to run it
+        stdin, stdout, stderr, wait_thr = Open3.popen3(message)
+
+        # get the response from stdout and insert a new mapping if this was job_reg
+        cmd_out = stdout.read.strip 
+
+        # make sure that everything went as expected
+        cmd_err_out = stderr.read
+        exit_status = wait_thr.value
+
+        # clean-up
+        stdin.close
+        stdout.close
+        stderr.close
+      }
+    rescue Timeout::Error => timex
+      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
+      raise NotifierError, "Failed to send the message! Timeout."
+    end  
 
     @logger.debug "[#{@notifier_name}] PID: #{exit_status.pid}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STDOUT:\n#{cmd_out}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STDERR:\n#{cmd_err_out}" unless @logger.nil?
     @logger.debug "[#{@notifier_name}] STATUS: #{exit_status.exitstatus}" unless @logger.nil?
 
-    # clean-up
-    stdin.close
-    stdout.close
-    stderr.close
+    if @current_state == :create
+      raise NotifierError, "glite-lb-job_reg returned invalid JOB ID. [#{cmd_out}]" unless cmd_out.start_with? "https://"
+      putMapping(@current_vmid, cmd_out)
+    end
 
     # if something went wrong, report it
     if exit_status.exitstatus > 0
@@ -122,7 +144,7 @@ class MetalbService
   def putMapping(vmid, jobid)
 
     @logger.debug "[#{@notifier_name}] inserting a mapping #{vmid} -> #{jobid}" unless @logger.nil?
-    @db[:lb_jobs].insert(:vmid => vmid, :lbjobid => jobid)
+    @db[:lb_jobs].insert(:vmid => vmid, :lbjobid => jobid, :created_at => DateTime.now)
 
   end
 
@@ -154,22 +176,34 @@ class MetalbService
 
     @logger.debug "[#{@notifier_name}] checking globus-proxy" unless @logger.nil?
     proxy_info = "grid-proxy-info | grep 'timeleft' | awk -F ' : ' '{print $2}'"
-    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_info)
-
-    valid_for = stdout.read
-
-    stdin.close
-    stdout.close
-    stderr.close
     
+    # default to non-valid
     status = false
+
+    wait_thr = nil
+    valid_for = nil
+
+    begin
+      Timeout::timeout(SHELL_CMD_TIMEOUT){
+        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_info)
+
+        valid_for = stdout.read
+
+        stdin.close
+        stdout.close
+        stderr.close
+      }
+    rescue Timeout::Error => timex
+      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
+      return status
+    end
     
     if wait_thr.value.exitstatus == 0 and not valid_for.empty?
       @logger.debug "[#{@notifier_name}] globus-proxy is valid for another #{valid_for}" unless @logger.nil?
       status = true
       
       parsed_valid_for = ChronicDuration::parse(valid_for)
-      status = false if parsed_valid_for.nil? or parsed_valid_for < 60
+      status = false if parsed_valid_for.nil? or parsed_valid_for < PROXY_REINIT_DEADLINE
     end
 
     status
@@ -180,40 +214,47 @@ class MetalbService
 
     @logger.debug "[#{@notifier_name}] starting globus-proxy" unless @logger.nil?
     proxy_init = "grid-proxy-init"
-    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_init)
 
-    err_out = stderr.read
+    wait_thr = nil
+    err_out = nil
 
-    stdin.close
-    stdout.close
-    stderr.close
+    begin
+      Timeout::timeout(SHELL_CMD_TIMEOUT){
+        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_init)
 
-    status = false
+        err_out = stderr.read
+
+        stdin.close
+        stdout.close
+        stderr.close
+      }
+    rescue Timeout::Error => timex
+      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
+      raise NotifierError, "Failed to initialize globus-proxy! Timeout."
+    end
     
-    if wait_thr.value.exitstatus == 0
-      status = true
-    else
+    unless wait_thr.value.exitstatus == 0
       @logger.error "[#{@notifier_name}] globus-proxy-init failed with #{err_out}" unless @logger.nil?
       raise NotifierError, "Failed to initialize globus-proxy! #{err_out}"
     end
-
-    status
 
   end
 
   def destroyGlobusProxy
 
     proxy_destroy = "grid-proxy-destroy"
-    stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_destroy)
 
-    stdin.close
-    stdout.close
-    stderr.close
+    begin
+      Timeout::timeout(SHELL_CMD_TIMEOUT){
+        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_destroy)
 
-    status = false
-    status = true if wait_thr.value.exitstatus == 0
-
-    status
+        stdin.close
+        stdout.close
+        stderr.close
+      }
+    rescue Timeout::Error => timex
+      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
+    end
 
   end
 
