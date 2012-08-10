@@ -53,7 +53,7 @@ begin
   logger.info "Notification successful"
 rescue Exception => e
   logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
-  logger.debug "Error details: #{y e.backtrace}"
+  logger.debug "Error details: #{YAML.dump(e.backtrace)}"
 end
 
 logger.info "Shutting down ..."
