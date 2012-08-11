@@ -45,6 +45,15 @@ logger.level = Lumberjack::Severity::DEBUG if options.debug
 
 mapfile = File.read(options.mapfile) unless options.mapfile.nil?
 
+lock = File.new("/tmp/metacloud-notify.lock", File::CREAT, 0644) 
+
+while not lock.flock(File::LOCK_EX | File::LOCK_NB) do
+  logger.debug "Waiting for the lock ..."
+  sleep 1
+end
+
+logger.debug "Locking ..."
+
 logger.info "Starting ..."
 
 begin
@@ -54,6 +63,9 @@ begin
 rescue Exception => e
   logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
   logger.debug "Error details: #{YAML.dump(e.backtrace)}"
+ensure
+  logger.debug "Releasing the lock ..."
+  lock.flock(File::LOCK_UN)
 end
 
 logger.info "Shutting down ..."
