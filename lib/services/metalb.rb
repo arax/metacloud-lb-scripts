@@ -16,7 +16,6 @@ require 'erb'
 require 'open3'
 require 'sequel'
 require 'resolv'
-require 'chronic_duration'
 require 'timeout'
 require 'date'
 
@@ -27,9 +26,8 @@ class MetalbService
   attr_reader :logger
   attr_reader :notifier_name
 
-  SHELL_CMD_TIMEOUT = 10
+  SHELL_CMD_TIMEOUT = 6
   SHELL_CMD_TIMEOUT_LONG = SHELL_CMD_TIMEOUT * 2
-  PROXY_REINIT_DEADLINE = 60
 
   def initialize(notifier_name, logger)
     
@@ -57,7 +55,7 @@ class MetalbService
   def write(message)
 
     # check credentials
-    initGlobusProxy unless validGlobusProxy
+    # for the time being, leave this to cron
 
     @logger.debug "[#{@notifier_name}] writting:\n#{message}" unless @logger.nil?
 
@@ -167,94 +165,6 @@ class MetalbService
 
     @logger.debug "[#{@notifier_name}] deleting a mapping for #{vmid}" unless @logger.nil?
     @db[:lb_jobs].filter(:vmid => vmid).delete
-
-  end
-
-  ## TODO clean-up, refactor proxy methods  ##
-
-  def validGlobusProxy
-
-    @logger.debug "[#{@notifier_name}] checking globus-proxy" unless @logger.nil?
-    proxy_info = "grid-proxy-info | grep 'timeleft' | awk -F ' : ' '{print $2}'"
-    
-    # default to non-valid
-    status = false
-
-    wait_thr = nil
-    valid_for = nil
-
-    begin
-      Timeout::timeout(SHELL_CMD_TIMEOUT){
-        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_info)
-
-        valid_for = stdout.read
-
-        stdin.close
-        stdout.close
-        stderr.close
-      }
-    rescue Timeout::Error => timex
-      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
-      return status
-    end
-    
-    if wait_thr.value.exitstatus == 0 and not valid_for.empty?
-      @logger.debug "[#{@notifier_name}] globus-proxy is valid for another #{valid_for}" unless @logger.nil?
-      status = true
-      
-      parsed_valid_for = ChronicDuration::parse(valid_for)
-      status = false if parsed_valid_for.nil? or parsed_valid_for < PROXY_REINIT_DEADLINE
-    end
-
-    status
-
-  end
-
-  def initGlobusProxy
-
-    @logger.debug "[#{@notifier_name}] starting globus-proxy" unless @logger.nil?
-    proxy_init = "grid-proxy-init"
-
-    wait_thr = nil
-    err_out = nil
-
-    begin
-      Timeout::timeout(SHELL_CMD_TIMEOUT){
-        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_init)
-
-        err_out = stderr.read
-
-        stdin.close
-        stdout.close
-        stderr.close
-      }
-    rescue Timeout::Error => timex
-      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
-      raise NotifierError, "Failed to initialize globus-proxy! Timeout."
-    end
-    
-    unless wait_thr.value.exitstatus == 0
-      @logger.error "[#{@notifier_name}] globus-proxy-init failed with #{err_out}" unless @logger.nil?
-      raise NotifierError, "Failed to initialize globus-proxy! #{err_out}"
-    end
-
-  end
-
-  def destroyGlobusProxy
-
-    proxy_destroy = "grid-proxy-destroy"
-
-    begin
-      Timeout::timeout(SHELL_CMD_TIMEOUT){
-        stdin, stdout, stderr, wait_thr = Open3.popen3(proxy_destroy)
-
-        stdin.close
-        stdout.close
-        stderr.close
-      }
-    rescue Timeout::Error => timex
-      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
-    end
 
   end
 
