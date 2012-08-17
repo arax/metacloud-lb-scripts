@@ -1,5 +1,5 @@
 GLite LB scripts for OpenNebula v3.x
-==============================
+====================================
 
 Description
 -----------
@@ -7,11 +7,41 @@ GLite Logging and Bookkeeping (LB) scripts compatible with OpenNebula.
 
 Installation
 ------------
-* Ruby 1.9.2+ => 'rvm install 1.9.2 && rvm use 1.9.2 --default'
-* Bundler => 'gem install bundler'
-* Gems => 'bundle install'
-* Working glite-lb-* client utilities with custom OpenNebula support (not included)
-* Working grid-proxy-* client utilities => e.g. globus-proxy-utils package in Debian
+* Ruby 1.9.2+
+
+~~~
+rvm install 1.9.2 && rvm use 1.9.2 --default
+~~~ 
+
+* Bundler
+
+~~~
+gem install bundler
+~~~
+
+* Gems
+
+~~~
+bundle install
+~~~
+
+* Working glite-lb client utilities
+
+~~~
+echo "deb http://scientific.zcu.cz/repos/META-RELEASE/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
+echo "deb http://scientific.zcu.cz/repos/EMI2-external/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
+
+apt-get update
+apt-get install glite-lb-client-progs 
+~~~
+
+* Working globus-proxy client utilities
+
+~~~
+apt-get install globus-proxy-utils
+~~~
+
+* Valid credentials with an automatic renewal (e.g. a cron job)
 * Working tail, grep, awk and tr utilities
 * ENV variables
 
