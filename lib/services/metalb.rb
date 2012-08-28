@@ -124,7 +124,7 @@ class MetalbService
 
     # get vm -> lbjob mapping if there is one
     edg_jobid = getMapping(@current_vmid)
-    edg_jobid = "" if edg_jobid.nil?    
+    edg_jobid = "https://#{ENV['GLITE_LB_DESTINATION']}/on_one-#{vm_template.ID}" if edg_jobid.nil?    
     
     # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
