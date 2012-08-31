@@ -11,36 +11,41 @@ class OptparseNotifier
     options.mapfile = nil
     options.log_to = :stdout
     options.log_to_file = "log/metacloud-notify.log"
+    options.krb_realm = "MYREALM"
 
     opts = OptionParser.new do |opts|
-      opts.banner = "Usage: metacloud-notify.rb [OPTIONS]"
+      opts.banner = "Usage: metacloud-notify.rb --vm-state STATE --vm-template TEMPLATE [OPTIONS]"
 
       opts.separator ""
       opts.separator "Options:"
 
-      opts.on("--vm-state [STATE]", [:create, :CREATE, :prolog, :PROLOG, :running, :RUNNING, :shutdown, :SHUTDOWN, :stop, :STOP, :done, :DONE, :failed, :FAILED], "Name of the ON hook that has been triggered, mandatory") do |vm_state|
+      opts.on("--vm-state STATE", [:create, :CREATE, :prolog, :PROLOG, :running, :RUNNING, :shutdown, :SHUTDOWN, :stop, :STOP, :done, :DONE, :failed, :FAILED], "Name of the ON hook that has been triggered, mandatory") do |vm_state|
         options.vm_state = vm_state.to_s.downcase.to_sym
       end
 
-      opts.on("--vm-template [TEMPLATE]", String, "Base64 encoded XML of the VM template, mandatory") do |vm_template|
+      opts.on("--vm-template TEMPLATE", String, "Base64 encoded XML of the VM template, mandatory") do |vm_template|
         options.vm_template = vm_template
       end
 
-      opts.on("--service-to-notify [SERVICE]", [:syslog, :metalb], "Service you wish to notify [syslog|metalb], defaults to syslog") do |service|
+      opts.on("--service-to-notify SERVICE", [:syslog, :metalb], "Service you wish to notify [syslog|metalb], defaults to syslog") do |service|
         options.service = service
       end
 
-      opts.on("--mapfile [PATH_TO_FILE]", String, "Path to a mapfile in YAML format") do |mapfile|
+      opts.on("--mapfile PATH_TO_FILE", String, "Path to a mapfile in YAML format") do |mapfile|
         raise ArgumentError, "The chosen mapfile does not exist or it is not readable" unless File.exists? mapfile or File.readable? mapfile
         options.mapfile = mapfile
       end
 
-      opts.on("--log-to [OUTPUT]", [:stdout, :stderr, :file], "Logger type [stdout|stderr|file], defaults to stdout") do |log_to|
+      opts.on("--log-to OUTPUT", [:stdout, :stderr, :file], "Logger type [stdout|stderr|file], defaults to stdout") do |log_to|
         options.log_to = log_to
       end
 
-      opts.on("--log-to-file [FILE]", String, "Log file, defaults to 'log/metacloud-notify.log'") do |log_to_file|
+      opts.on("--log-to-file FILE", String, "Log file, defaults to 'log/metacloud-notify.log'") do |log_to_file|
         options.log_to_file = log_to_file
+      end
+
+      opts.on("--krb-realm MYREALM", String, "Krb5 realm for ON users, defaults to 'MYREALM'") do |krb_realm|
+        options.krb_realm = krb_realm
       end
 
       opts.on_tail("--debug", "Enable debugging messages") do |debug|
@@ -64,7 +69,7 @@ class OptparseNotifier
 	        puts 'UNKNOWN'
         end
 
-        exit!
+        exit!(true)
       end
 
     end
@@ -77,7 +82,7 @@ class OptparseNotifier
       exit!
     end
 
-    mandatory = [:service, :vm_template, :vm_state, :log_to, :log_to_file]
+    mandatory = [:service, :vm_template, :vm_state, :log_to, :log_to_file, :krb_realm]
     options_hash = options.marshal_dump
 
     missing = mandatory.select{ |param| options_hash[param].nil? }

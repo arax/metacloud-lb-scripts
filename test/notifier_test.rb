@@ -109,7 +109,7 @@ class NotifierTest < Test::Unit::TestCase
   def test_map_user_identity
 
     assert_equal "/DC=org/DC=terena/DC=tcs/C=CZ/O=Masaryk University/CN=Real Identity 007", @notifier.map_user_identity("oneadmin")
-    assert_equal "non-mapped-user", @notifier.map_user_identity("non-mapped-user")
+    assert_equal "non-mapped-user@MYREALM", @notifier.map_user_identity("non-mapped-user")
 
     assert_raise ArgumentError do
       @notifier.map_user_identity ""

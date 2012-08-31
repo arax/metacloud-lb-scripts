@@ -23,7 +23,7 @@ require_all File.expand_path("..", __FILE__) + '/services/'
 
 class Notifier
 
-  def initialize(service, logger, mapfile = nil)
+  def initialize(service, logger, mapfile = nil, krb_realm = 'MYREALM')
 
     logger.info "Initializing notifier for #{service.to_s.capitalize}"
 
@@ -32,6 +32,8 @@ class Notifier
 
     classname = service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new nil, logger
+
+    @krb_realm = krb_realm
 
   end
 
@@ -69,7 +71,7 @@ class Notifier
     raise ArgumentError, "Username should not be empty!" if user_name.nil? or user_name.empty?
     @logger.info "Looking for global identity of user #{user_name}"
 
-    identity = user_name
+    identity = user_name + '@' + @krb_realm
     identity = @mapfile[user_name] unless @mapfile.nil? or not @mapfile.has_key? user_name
 
     @logger.debug "Found mapping #{user_name} => #{identity}"
