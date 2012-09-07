@@ -2,32 +2,32 @@
 case
 when ((vm_state == :create) and (not edg_jobid.empty?))
 %>
-glite-lb-job_reg -m $GLITE_LB_DESTINATION -s UserInterface -j <%= edg_jobid %> -E -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
+glite-lb-job_reg -m $GLITE_LB_DESTINATION -s CloudManager -j <%= edg_jobid %> -o "<%= user_identity %>"  -E -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
 <%
 when ((vm_state == :prolog) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<%= vm_template.IMAGES.first %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --owner "<%= user_identity %>" --hostname "<%= vm_hostname %>" --manager xen
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<%= vm_template.IMAGES.first %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --hostname "<%= vm_hostname %>" --manager xen
 <%
 when ((vm_state == :running) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMRunning --vm_source CM
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMHost --hostname "<%= vm_template.HOSTS.last %>"
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMRunning
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMHost --hostname "<%= vm_template.HOSTS.last %>"
 <%
 when ((vm_state == :shutdown) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMShutdown --vm_source CM
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMShutdown
 <%
 when ((vm_state == :stop) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMStop
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMStop
 <%
 when ((vm_state == :done) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code OK --usage "<%= vm_usage %>"
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code OK --usage "<%= vm_usage %>"
 <%
 when ((vm_state == :failed) and (not edg_jobid.empty?))
 %>
-glite-lb-logevent --source Application --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code FAILURE --usage "<%= vm_usage %>"
+glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMDone --status_code FAILURE --usage "<%= vm_usage %>"
 <%
 else
 %>
