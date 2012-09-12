@@ -7,6 +7,7 @@ glite-lb-job_reg -m $GLITE_LB_DESTINATION -s CloudManager -j <%= edg_jobid %> -o
 when ((vm_state == :prolog) and (not edg_jobid.empty?))
 %>
 glite-lb-logevent --source CloudManager --jobid <%= edg_jobid %> --sequence <%= edg_wl_sequence %> --event VMCreate --image "<%= vm_template.IMAGES.first %>" --require "<%= vm_template.REQ_VCPU %> CPU, <%= vm_template.REQ_MEMORY %> MB RAM" --id <%= vm_template.ID %> --name "<%= vm_template.NAME %>" --owner "<%= user_identity %>" --hostname "<%= vm_hostname %>" --manager xen
+glite-lb-logevent -e ChangeACL -s CloudManager -p -j <%= edg_jobid %> --user_id "host/<%= vm_hostname %>@ICS.MUNI.CZ" --user_id_type DN --permission READ --permission_type ALLOW --operation ADD
 <%
 when ((vm_state == :running) and (not edg_jobid.empty?))
 %>
