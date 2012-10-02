@@ -49,7 +49,7 @@ mapfile = File.read(options.mapfile) unless options.mapfile.nil?
 logger.info "Starting ..."
 
 begin
-  notifier = Notifier.new options.service, logger, mapfile, options.krb_realm
+  notifier = Notifier.new options.service, logger, mapfile, options.krb_realm, options.krb_host_realm
   notifier.notify options.vm_state, options.vm_template
   logger.info "Notification successful"
 rescue Exception => e

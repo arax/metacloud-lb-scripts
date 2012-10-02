@@ -12,6 +12,7 @@ class OptparseNotifier
     options.log_to = :stdout
     options.log_to_file = "log/metacloud-notify.log"
     options.krb_realm = "MYREALM"
+    options.krb_host_realm = "MYHOSTREALM"
 
     opts = OptionParser.new do |opts|
       opts.banner = "Usage: metacloud-notify.rb --vm-state STATE --vm-template TEMPLATE [OPTIONS]"
@@ -48,6 +49,10 @@ class OptparseNotifier
         options.krb_realm = krb_realm
       end
 
+      opts.on("--krb-host-realm MYHOSTREALM", String, "Krb5 realm for virtual machines (host/HOSTNAME@MYHOSTREALM), defaults to 'MYHOSTREALM'") do |krb_host_realm|
+        options.krb_host_realm = krb_host_realm
+      end
+
       opts.on_tail("--debug", "Enable debugging messages") do |debug|
         options.debug = debug
       end
@@ -82,7 +87,7 @@ class OptparseNotifier
       exit!
     end
 
-    mandatory = [:service, :vm_template, :vm_state, :log_to, :log_to_file, :krb_realm]
+    mandatory = [:service, :vm_template, :vm_state, :log_to, :log_to_file, :krb_realm, :krb_host_realm]
     options_hash = options.marshal_dump
 
     missing = mandatory.select{ |param| options_hash[param].nil? }

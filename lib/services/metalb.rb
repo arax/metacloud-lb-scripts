@@ -107,7 +107,7 @@ class MetalbService
 
   end
 
-  def prepare_message(vm_state, user_identity, vm_template, vm_usage)
+  def prepare_message(vm_state, user_identity, vm_template, vm_usage, krb_host_realm)
 
     # store some variables in attributes for subsequent use in write
     @current_vmid = vm_template.ID

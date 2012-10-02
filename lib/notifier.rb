@@ -23,7 +23,7 @@ require_all File.expand_path("..", __FILE__) + '/services/'
 
 class Notifier
 
-  def initialize(service, logger, mapfile = nil, krb_realm = 'MYREALM')
+  def initialize(service, logger, mapfile = nil, krb_realm = 'MYREALM', krb_host_realm = 'MYHOSTREALM')
 
     logger.info "Initializing notifier for #{service.to_s.capitalize}"
 
@@ -34,6 +34,7 @@ class Notifier
     @service = Kernel.const_get(classname).new nil, logger
 
     @krb_realm = krb_realm
+    @krb_host_realm = krb_host_realm
 
   end
 
@@ -53,7 +54,7 @@ class Notifier
 
       vm_usage = prepare_usage vm_state, vm_info
 
-      vm_notification = prepare_notification vm_state, vm_user, vm_info, vm_usage
+      vm_notification = prepare_notification vm_state, vm_user, vm_info, vm_usage, @krb_host_realm
 
     rescue Exception => e
 
@@ -79,13 +80,13 @@ class Notifier
 
   end
 
-  def prepare_notification(vm_state, user_identity, vm_template, vm_usage)
+  def prepare_notification(vm_state, user_identity, vm_template, vm_usage, krb_host_realm)
 
     raise ArgumentError, "VM state, user identity and VM template should not be empty!" if vm_template.nil? or vm_state.nil? or user_identity.nil? or user_identity.empty? or vm_usage.nil?
     raise ArgumentError, "Invalid VMTemplate!" if vm_template.class != VMTemplate
     @logger.info "Constructing #{vm_state.to_s.upcase} notification message for #{vm_template.NAME} which will be sent to #{@service.class.name}"
 
-    notification = @service.prepare_message vm_state, user_identity, vm_template, vm_usage
+    notification = @service.prepare_message vm_state, user_identity, vm_template, vm_usage, krb_host_realm
 
     @logger.debug "Notification message will contain the following: #{notification}"
     notification
