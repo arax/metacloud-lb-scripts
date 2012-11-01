@@ -37,7 +37,7 @@ class MetalbService
 
     # we need a DB for VMID <-> JOBID mappings
     unless ENV['ONE_LOCATION'].empty?
-      @db = Sequel.sqlite "#{ENV['ONE_LOCATION']}/db/metacloud-notify.sqlite"
+      @db = Sequel.sqlite "#{ENV['ONE_LOCATION']}/var/metacloud-notify.sqlite"
     else  
       @db = Sequel.sqlite 'metacloud-notify.sqlite'
     end
@@ -81,7 +81,7 @@ class MetalbService
         stderr.close
       }
     rescue Timeout::Error => timex
-      @logger.error "[#{@notifier_name}] globus-proxy timed out!" unless @logger.nil?
+      @logger.error "[#{@notifier_name}] shell execution timed out!" unless @logger.nil?
       raise NotifierError, "Failed to send the message! Timeout."
     end  
 
@@ -124,7 +124,7 @@ class MetalbService
 
     # get vm -> lbjob mapping if there is one
     edg_jobid = getMapping(@current_vmid)
-    edg_jobid = "https://#{ENV['GLITE_LB_DESTINATION']}/on_one-#{vm_template.ID}" if edg_jobid.nil?    
+    edg_jobid = "https://#{ENV['GLITE_LB_DESTINATION']}/on_#{`hostname -f`.strip}_one-#{vm_template.ID}" if edg_jobid.nil?
     
     # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
