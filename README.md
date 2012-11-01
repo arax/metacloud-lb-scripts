@@ -22,14 +22,14 @@ gem install bundler
 * Scripts (required)
 
 ~~~
-cd $ONE\_LOCATION/var/remotes/hooks
+cd $ONE_LOCATION/var/remotes/hooks
 git clone git://github.com/arax/metacloud-lb-scripts.git
 ~~~
 
 * Gems (required)
 
 ~~~
-cd $ONE\_LOCATION/var/remotes/hooks/metacloud-lb-scripts
+cd $ONE_LOCATION/var/remotes/hooks/metacloud-lb-scripts
 bundle install
 ~~~
 
@@ -54,8 +54,8 @@ apt-get install globus-proxy-utils
 * ENV variables (required for metalb service)
 
 ~~~
-export GLITE\_WMS\_LOG\_DESTINATION=HOSTNAME:PORT
-export GLITE\_LB\_DESTINATION=HOSTNAME:PORT
+export GLITE_WMS_LOG_DESTINATION=HOSTNAME:PORT
+export GLITE_LB_DESTINATION=HOSTNAME:PORT
 ~~~
 
 * Hooks registered in OpenNebula's oned.conf (required)
@@ -63,12 +63,12 @@ export GLITE\_LB\_DESTINATION=HOSTNAME:PORT
 Usage
 -----
 ~~~
-[PATH/]metacloud-notify.rb --vm-template BASE64\_XML\_TEMPLATE --vm-state HOOK\_NAME --service-to-notify SERVICE [--debug] [--mapfile YAML_FILE] [--log-to DEVICE] [--log-to-file FILE] [--krb-realm MYREALM] [--krb-host-realm MYHOSTREALM]
+[PATH/]metacloud-notify.rb --vm-template BASE64_XML_TEMPLATE --vm-state HOOK_NAME --service-to-notify SERVICE [--debug] [--mapfile YAML_FILE] [--log-to DEVICE] [--log-to-file FILE] [--krb-realm MYREALM] [--krb-host-realm MYHOSTREALM]
 
 SERVICE               := syslog | metalb
-HOOK\_NAME            := CREATE | PROLOG | RUNNING | SHUTDOWN | STOP | DONE | FAILED
-YAML\_FILE            := YAML file containing identity mappings (i.e. oneadmin: "xyzuser")
-BASE64\_XML\_TEMPLATE := Base64 encoded XML template
+HOOK_NAME            := CREATE | PROLOG | RUNNING | SHUTDOWN | STOP | DONE | FAILED
+YAML_FILE            := YAML file containing identity mappings (i.e. oneadmin: "xyzuser")
+BASE64_XML_TEMPLATE := Base64 encoded XML template
 DEVICE                := Logger type [stdout|stderr|file], defaults to stdout
 FILE                  := Log file, defaults to 'log/metacloud-notify.log'
 MYREALM               := Krb5 realm for ON users
@@ -80,8 +80,8 @@ Examples
 
 Syslog (for testing purposes only)
 ~~~
-VM\_HOOK = [
-   name      = "log\_create",
+VM_HOOK = [
+   name      = "log_create",
    on        = "CREATE",
    command   = "metacloud-lb-scripts/metacloud-notify.rb",
    arguments = "--vm-state CREATE --vm-template $TEMPLATE --service-to-notify syslog" ]
@@ -89,8 +89,8 @@ VM\_HOOK = [
 
 Basic LB setup
 ~~~
-VM\_HOOK = [
-   name      = "log\_create",
+VM_HOOK = [
+   name      = "log_create",
    on        = "CREATE",
    command   = "metacloud-lb-scripts/metacloud-notify.rb",
    arguments = "--vm-state CREATE --vm-template $TEMPLATE --service-to-notify metalb" ]
