@@ -36,10 +36,10 @@ class MetalbService
     @logger = logger
 
     # we need a DB for VMID <-> JOBID mappings
-    unless ENV['ONE_LOCATION'].empty?
-      @db = Sequel.sqlite "#{ENV['ONE_LOCATION']}/var/metacloud-notify.sqlite"
-    else  
+    if ENV['ONE_LOCATION'].empty? or ENV['ONE_LOCATION'] == '/'
       @db = Sequel.sqlite 'metacloud-notify.sqlite'
+    else
+      @db = Sequel.sqlite "#{ENV['ONE_LOCATION'].chomp '/'}/var/metacloud-notify.sqlite"
     end
 
     # create lb_jobs table if there isn't one already available
@@ -68,7 +68,7 @@ class MetalbService
         # message for LB is a shell command, we have to run it
         stdin, stdout, stderr, wait_thr = Open3.popen3(message)
 
-        # get the response from stdout and insert a new mapping if this was job_reg
+        # get the response from stdout
         cmd_out = stdout.read.strip 
 
         # make sure that everything went as expected
@@ -82,7 +82,7 @@ class MetalbService
       }
     rescue Timeout::Error => timex
       @logger.error "[#{@notifier_name}] shell execution timed out!" unless @logger.nil?
-      raise NotifierError, "Failed to send the message! Timeout."
+      raise NotifierError, "Shell execution has failed! #{timex.message}"
     end  
 
     @logger.debug "[#{@notifier_name}] PID: #{exit_status.pid}" unless @logger.nil?
@@ -91,13 +91,14 @@ class MetalbService
     @logger.debug "[#{@notifier_name}] STATUS: #{exit_status.exitstatus}" unless @logger.nil?
 
     if @current_state == :create
-      raise NotifierError, "glite-lb-job_reg returned invalid JOB ID. [#{cmd_out}]" unless cmd_out.start_with? "https://"
-      putMapping(@current_vmid, cmd_out)
+      new_jobid = parse_jobid_from cmd_out
+      raise NotifierError, "glite-lb-job_reg returned invalid JOB ID. [#{new_jobid}]" unless new_jobid.start_with? "https://"
+      putMapping(@current_vmid, new_jobid)
     end
 
     # if something went wrong, report it
     if exit_status.exitstatus > 0
-      @logger.error "[#{@notifier_name}] #{cmd_err_out}" unless @logger.nil?
+      raise NotifierError, "Shell execution has failed! #{cmd_err_out}"
     end
 
     # DONE is the last state, DB clean-up
@@ -107,19 +108,24 @@ class MetalbService
 
   end
 
-  def prepare_message(vm_state, user_identity, vm_template, vm_usage, krb_host_realm)
+  def prepare_message(vm_state, user_identity, vm_template, additional = {})
 
     # store some variables in attributes for subsequent use in write
     @current_vmid = vm_template.ID
     @current_state = vm_state
 
+    # check ENV variables
+    raise NotifierError, "GLITE_LB_DESTINATION is not set!" if ENV['GLITE_LB_DESTINATION'].empty?
+    raise NotifierError, "GLITE_WMS_LOG_DESTINATION is not set!" if ENV['GLITE_WMS_LOG_DESTINATION'].empty?
+
     # resolv the first VM IP address to a hostname
     vm_hostname = 'UNKNOWN'
+    vm_hostname = vm_template.IPS.first unless vm_template.IPS.nil?
     
     begin
       vm_hostname = Resolv.getname(vm_template.IPS.first) unless vm_template.IPS.nil?
     rescue
-      @logger.error "[#{@notifier_name}] couldn't resolve #{vm_template.IPS.first} to a valid hostname" unless @logger.nil?
+      @logger.warn "[#{@notifier_name}] couldn't resolve #{vm_template.IPS.first} to a valid hostname" unless @logger.nil?
     end
 
     # get vm -> lbjob mapping if there is one
@@ -129,6 +135,10 @@ class MetalbService
     # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
 
+    # pull additional data from hash
+    krb_host_realm = additional[:krb_host_realm]
+    vm_usage = additional[:vm_usage]
+
     # use templates to generate the message
     msg_template = ERB.new File.new(File.expand_path("..", __FILE__) + "/templates/metalb.erb").read
     message = msg_template.result(binding)
@@ -137,6 +147,18 @@ class MetalbService
 
     message
 
+  end
+
+  private
+
+  def parse_jobid_from(response)
+    matched = /EDG_JOBID="(.*)"/.match(response)
+
+    if not matched.nil? and matched.size == 1
+      matched[1]
+    else
+      ""
+    end
   end
 
   def putMapping(vmid, jobid)

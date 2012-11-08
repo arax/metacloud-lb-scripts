@@ -2,7 +2,7 @@
 case
 when ((vm_state == :create) and (not edg_jobid.empty?))
 %>
-glite-lb-job_reg -m $GLITE_LB_DESTINATION -s CloudManager -j <%= edg_jobid %> -o "<%= user_identity %>"  -E -v | tail -n 2 | grep EDG_JOBID | awk -F = '{print $2}' | tr -d '"'
+glite-lb-job_reg -m <%= ENV['GLITE_LB_DESTINATION'] %> -s CloudManager -j <%= edg_jobid %> -o "<%= user_identity %>"  -E -v
 <%
 when ((vm_state == :prolog) and (not edg_jobid.empty?))
 %>

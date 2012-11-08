@@ -19,6 +19,7 @@ $: << File.expand_path("..", __FILE__) + '/../lib'
 # bundler integration and dependencies
 require 'rubygems'
 require 'bundler/setup'
+require 'ostruct'
 
 require 'notifier'
 require 'vm_template'
@@ -65,7 +66,12 @@ class NotifierTest < Test::Unit::TestCase
     end
 
     # Notifier instance
-    @notifier = Notifier.new :syslog, @logger, File.read(File.expand_path("..", __FILE__) + '/mockdata/mapfile')
+    options = OpenStruct.new
+    options.service = :syslog
+    options.mapfile = File.expand_path("..", __FILE__) + '/mockdata/mapfile'
+    options.krb_realm = "MyTestREALM"
+    options.krb_host_realm = "MyTestHostREALM"
+    @notifier = Notifier.new options, @logger
   end
 
   # Called after every test method runs. Can be used to tear
@@ -109,7 +115,7 @@ class NotifierTest < Test::Unit::TestCase
   def test_map_user_identity
 
     assert_equal "/DC=org/DC=terena/DC=tcs/C=CZ/O=Masaryk University/CN=Real Identity 007", @notifier.map_user_identity("oneadmin")
-    assert_equal "non-mapped-user@MYREALM", @notifier.map_user_identity("non-mapped-user")
+    assert_equal "non-mapped-user@MyTestREALM", @notifier.map_user_identity("non-mapped-user")
 
     assert_raise ArgumentError do
       @notifier.map_user_identity ""

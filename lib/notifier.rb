@@ -15,26 +15,25 @@
 require 'require_all'
 require 'base64'
 require 'chronic_duration'
+require 'yaml'
 
 require 'vm_template'
-require 'notifier_error'
 
 require_all File.expand_path("..", __FILE__) + '/services/'
 
 class Notifier
 
-  def initialize(service, logger, mapfile = nil, krb_realm = 'MYREALM', krb_host_realm = 'MYHOSTREALM')
+  def initialize(options, logger)
 
-    logger.info "Initializing notifier for #{service.to_s.capitalize}"
+    logger.info "Initializing notifier for #{options.service.to_s.capitalize}" 
 
     @logger = logger
-    @mapfile = YAML.load(mapfile) unless mapfile.nil? or mapfile.empty?
+    @mapfile = YAML.load(File.read(options.mapfile)) unless options.mapfile.nil? or options.mapfile.empty?
 
-    classname = service.to_s.capitalize + 'Service'
+    classname = options.service.to_s.capitalize + 'Service'
     @service = Kernel.const_get(classname).new nil, logger
 
-    @krb_realm = krb_realm
-    @krb_host_realm = krb_host_realm
+    @options = options
 
   end
 
@@ -44,24 +43,12 @@ class Notifier
     raise ArgumentError, "VM state should not be empty!" if vm_state.nil?
     @logger.info "Sending a message to #{@service.class.name}"
 
+    vm_info = read_template(decode_base64(vm_template))
 
-    begin
-
-      vm_template_xml = decode_base64 vm_template
-      vm_info = read_template vm_template_xml
-
-      vm_user = map_user_identity vm_info.UNAME
-
-      vm_usage = prepare_usage vm_state, vm_info
-
-      vm_notification = prepare_notification vm_state, vm_user, vm_info, vm_usage, @krb_host_realm
-
-    rescue Exception => e
-
-      @logger.error "Notifier failed to prepare the notification message. Error: #{e.message}"
-      raise NotifierError, "#{e.message}"
-
-    end
+    vm_notification = prepare_notification vm_state,
+                                           map_user_identity(vm_info.UNAME),
+                                           vm_info,
+                                           prepare_usage(vm_state, vm_info)
 
     @service.write vm_notification
 
@@ -72,7 +59,7 @@ class Notifier
     raise ArgumentError, "Username should not be empty!" if user_name.nil? or user_name.empty?
     @logger.info "Looking for global identity of user #{user_name}"
 
-    identity = user_name + '@' + @krb_realm
+    identity = user_name + '@' + @options.krb_realm
     identity = @mapfile[user_name] unless @mapfile.nil? or not @mapfile.has_key? user_name
 
     @logger.debug "Found mapping #{user_name} => #{identity}"
@@ -80,13 +67,20 @@ class Notifier
 
   end
 
-  def prepare_notification(vm_state, user_identity, vm_template, vm_usage, krb_host_realm)
+  def prepare_notification(vm_state, user_identity, vm_template, vm_usage)
 
-    raise ArgumentError, "VM state, user identity and VM template should not be empty!" if vm_template.nil? or vm_state.nil? or user_identity.nil? or user_identity.empty? or vm_usage.nil?
+    if vm_template.nil? or vm_state.nil? or user_identity.nil? or user_identity.empty? or vm_usage.nil?
+      raise ArgumentError, "VM state, user identity and VM template should not be empty!"
+    end
+
     raise ArgumentError, "Invalid VMTemplate!" if vm_template.class != VMTemplate
     @logger.info "Constructing #{vm_state.to_s.upcase} notification message for #{vm_template.NAME} which will be sent to #{@service.class.name}"
 
-    notification = @service.prepare_message vm_state, user_identity, vm_template, vm_usage, krb_host_realm
+    additional = { :vm_usage => vm_usage, :krb_host_realm => @options.krb_host_realm }
+    notification = @service.prepare_message vm_state,
+                                            user_identity,
+                                            vm_template,
+                                            additional
 
     @logger.debug "Notification message will contain the following: #{notification}"
     notification

@@ -21,7 +21,6 @@ require 'rubygems'
 require 'bundler/setup'
 
 require 'lumberjack'
-require 'yaml'
 
 require 'notifier'
 require 'optparse_notifier'
@@ -43,18 +42,17 @@ end
 logger.progname = 'MetaCloudNotifier'
 logger.level = Lumberjack::Severity::DEBUG if options.debug
 
-mapfile = nil
-mapfile = File.read(options.mapfile) unless options.mapfile.nil?
-
 logger.info "Starting ..."
 
 begin
-  notifier = Notifier.new options.service, logger, mapfile, options.krb_realm, options.krb_host_realm
+  notifier = Notifier.new options, logger
+
   notifier.notify options.vm_state, options.vm_template
   logger.info "Notification successful"
 rescue Exception => e
-  logger.info "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
-  logger.debug "Error details: #{YAML.dump(e.backtrace)}"
+  logger.error "Notification unsuccessful. #{e.class.to_s}: #{e.message}"
+  logger.debug "Error details: #{e.backtrace.to_s}"
+  exit!(1)
 end
 
 logger.info "Shutting down ..."
