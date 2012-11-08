@@ -8,6 +8,7 @@ GLite Logging and Bookkeeping (LB) scripts compatible with OpenNebula 3.4+.
 Installation
 ------------
 * Ruby 1.9.2+ (recommended)
+
 If your distro doesn't provide packages for newer Ruby versions, you can
 use [RVM](https://rvm.io/rvm/install/). 
 ~~~
@@ -15,15 +16,18 @@ rvm install 1.9.2 && rvm use 1.9.2 --default
 ~~~ 
 
 * Bundler (required)
+
 Bundler will help you with dependencies later on.
 ~~~
 gem install bundler
 ~~~
 
 * Scripts (required)
+
 OpenNebula looks for custom hooks in a specific location, but you can always
 choose your own directory and specify full path to the hook later.
-** NOTICE **: OpenNebula's remote scripts can be propagated to hosts using
+
+NOTICE: OpenNebula's remote scripts can be propagated to hosts using
 the "onehost sync" command. This has been know to fail when "remotes/hooks"
 contains the ".git" directory. If you experience problems, move ".git"
 to a different directory (do NOT remove it, it's useful to have a git-enabled
@@ -34,6 +38,7 @@ git clone git://github.com/arax/metacloud-lb-scripts.git
 ~~~
 
 * Gems (required)
+
 All dependencies are handled by Bundler, but some gems might have their own
 non-Ruby dependencies (usually a few *-dev packages you have to install by
 hand, e.g. libexpat-dev for nokogiri XML parser etc.). If there are missing
@@ -44,34 +49,39 @@ bundle install
 ~~~
 
 * glite-lb client utilities (required for metalb service)
+
 LB notification are sent using native binaries "glite-lb-job_reg" and
 "glite-lb-logevent". You can install them as a part of "glite-lb-client-progs"
 from Debian/Ubuntu repos mentioned below.
-** NOTICE ** Don't forget to update PATH, "glite-lb-logevent" is often
+
+NOTICE: Don't forget to update PATH, "glite-lb-logevent" is often
 installed in "/usr/lib/glite-lb/examples".
 ~~~
 echo "deb http://scientific.zcu.cz/repos/META-RELEASE/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
 echo "deb http://scientific.zcu.cz/repos/EMI2-external/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
-
+~~~
+~~~
 apt-get update
 apt-get install glite-lb-client-progs 
 ~~~
 
 * globus-proxy client utilities (required for metalb service)
+
 You should choose an auth mechanism based on your LB server capabilities.
 This example will use X.509 proxy certificates.
 ~~~
 apt-get install globus-proxy-utils
 ~~~
 
-* Valid credentials with an automatic renewal (e.g. a cron job with
-grid-proxy-init, required for metalb service)i
+* Valid credentials with an automatic renewal (e.g. a cron job with grid-proxy-init, required for metalb service)
+
 The script doesn't check your credentials, you shouldn't let them expire!
 ~~~
 */15 * * * * grid-proxy-init
 ~~~
 
 * ENV variables (required for metalb service)
+
 Destination for events is determined from ENV variables, HOSTNAME should
 be a FQDN (no protocol, no slashes).
 ~~~
@@ -80,6 +90,7 @@ export GLITE_LB_DESTINATION=<HOSTNAME>:<PORT>
 ~~~
 
 * Hooks registered in OpenNebula's oned.conf (required)
+
 See [Examples](#Examples) below.
 
 Usage
