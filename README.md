@@ -67,13 +67,13 @@ This example will use X.509 proxy certificates.
 apt-get install globus-proxy-utils
 ~~~
 
-##Valid credentials with an automatic renewal (e.g. a cron job with grid-proxy-init, required for metalb service)
+###Valid credentials with an automatic renewal (e.g. a cron job with grid-proxy-init, required for metalb service)
 The script doesn't check your credentials, you shouldn't let them expire!
 ~~~
 */15 * * * * grid-proxy-init
 ~~~
 
-##ENV variables (required for metalb service)
+###ENV variables (required for metalb service)
 Destination for events is determined from ENV variables, HOSTNAME should
 be a FQDN (no protocol, no slashes).
 ~~~
@@ -81,7 +81,7 @@ export GLITE_WMS_LOG_DESTINATION=<HOSTNAME>:<PORT>
 export GLITE_LB_DESTINATION=<HOSTNAME>:<PORT>
 ~~~
 
-##Hooks registered in OpenNebula's oned.conf (required)
+###Hooks registered in OpenNebula's oned.conf (required)
 See [Examples](#examples) below.
 
 Usage
