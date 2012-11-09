@@ -154,9 +154,13 @@ class MetalbService
   def parse_jobid_from(response)
     matched = /EDG_JOBID="(.*)"/.match(response)
 
-    if not matched.nil? and matched.size == 1
+    return "" if matched.nil?
+
+    if matched.size > 0
+      # there is at least one EDG_JOBID in the response
       matched[1]
     else
+      # no sure what happened, there is no EDG_JOBID in the response
       ""
     end
   end
