@@ -37,7 +37,7 @@ gem install bundler
 OpenNebula looks for custom hooks in a specific location, but you can always
 choose your own directory and specify full path to the hook later.
 
-NOTICE: OpenNebula's remote scripts can be propagated to hosts using
+**NOTICE**: OpenNebula's remote scripts can be propagated to hosts using
 the "onehost sync" command. This has been know to fail when "remotes/hooks"
 contains the ".git" directory. If you experience problems, move ".git"
 to a different directory (do NOT remove it, it's useful to have a git-enabled
@@ -61,9 +61,9 @@ bundle install
 LB notification are sent using native binaries "glite-lb-job_reg" and
 "glite-lb-logevent". You can install them as a part of "glite-lb-client-progs"
 from Debian/Ubuntu repos mentioned below or download statically linked
-binaries from [http://scientific.zcu.cz/repos/META-RELEASE/static/].
+binaries from [META-RELEASE/static](http://scientific.zcu.cz/repos/META-RELEASE/static/).
 
-NOTICE: Don't forget to update PATH, "glite-lb-logevent" is often
+**NOTICE**: Don't forget to update PATH, "glite-lb-logevent" is often
 installed in "/usr/lib/glite-lb/examples".
 ~~~
 echo "deb http://scientific.zcu.cz/repos/META-RELEASE/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
