@@ -60,7 +60,8 @@ bundle install
 ###glite-lb client utilities (required for metalb service)
 LB notification are sent using native binaries "glite-lb-job_reg" and
 "glite-lb-logevent". You can install them as a part of "glite-lb-client-progs"
-from Debian/Ubuntu repos mentioned below.
+from Debian/Ubuntu repos mentioned below or download statically linked
+binaries from [http://scientific.zcu.cz/repos/META-RELEASE/static/].
 
 NOTICE: Don't forget to update PATH, "glite-lb-logevent" is often
 installed in "/usr/lib/glite-lb/examples".
