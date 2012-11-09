@@ -37,7 +37,7 @@ class MetalbService
 
     # we need a DB for VMID <-> JOBID mappings
     if ENV['ONE_LOCATION'].empty? or ENV['ONE_LOCATION'] == '/'
-      @db = Sequel.sqlite '../../db/metacloud-notify.sqlite'
+      @db = Sequel.sqlite 'db/metacloud-notify.sqlite'
     else
       @db = Sequel.sqlite "#{ENV['ONE_LOCATION'].chomp '/'}/var/metacloud-notify.sqlite"
     end

@@ -10,7 +10,8 @@
 .bundle
 
 # data files
-metacloud-notify.sqlite
+db/metacloud-notify.sqlite
 
 # log files
 *.log
+log/*.log
