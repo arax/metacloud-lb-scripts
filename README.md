@@ -1,12 +1,25 @@
-GLite LB scripts for OpenNebula v3.4+
-=====================================
+GLite LB scripts for OpenNebula
+===============================
 
 Description
 -----------
-GLite Logging and Bookkeeping (LB) scripts compatible with OpenNebula 3.4+.
+GLite Logging and Bookkeeping (LB) scripts compatible with OpenNebula.
 
 Installation
 ------------
+### Prerequisites (required)
+The following step-by-step installation manual expects you to:
+* have OpenNebula v3.4+ installed and properly configured
+* execute all commands mentioned below as the oneadmin user or
+  its equivalent in your ON installation (except the package manager)
+* have a debian-based distro installed (glite-lb-client-progs are
+  available only as deb packages, for now)
+* have an instance of the LB (Logging & Bookkeeping) server
+  installed and to know its location
+* have valid host credentials, e.g. an X.509 host certificate
+* have your credentials registered with the LB server
+  to allow logging
+
 ### Ruby 1.9.2+ (recommended)
 If your distro doesn't provide packages for newer Ruby versions, you can
 use [RVM](https://rvm.io/rvm/install/). 
