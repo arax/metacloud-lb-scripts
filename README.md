@@ -24,7 +24,9 @@ The following step-by-step installation manual expects you to:
 If your distro doesn't provide packages for newer Ruby versions, you can
 use [RVM](https://rvm.io/rvm/install/). 
 ~~~
-rvm install 1.9.2 && rvm use 1.9.2 --default
+curl -L https://get.rvm.io | bash -s stable --ruby
+echo '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*' >> ~/.bashrc
+source "$HOME/.rvm/scripts/rvm"
 ~~~ 
 
 ###Bundler (required)
@@ -68,6 +70,10 @@ installed in "/usr/lib/glite-lb/examples".
 ~~~
 echo "deb http://scientific.zcu.cz/repos/META-RELEASE/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
 echo "deb http://scientific.zcu.cz/repos/EMI2-external/debian/ stable/" >> /etc/apt/sources.list.d/glite.list
+~~~
+~~~
+wget http://scientific.zcu.cz/repos/valtri.asc
+apt-key add valtri.asc
 ~~~
 ~~~
 apt-get update
