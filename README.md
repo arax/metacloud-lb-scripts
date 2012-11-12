@@ -22,7 +22,7 @@ The following step-by-step installation manual expects you to:
 
 ### Ruby 1.9.2+ (recommended)
 If your distro doesn't provide packages for newer Ruby versions, you can
-use [RVM](https://rvm.io/rvm/install/). 
+use [RVM](https://rvm.io/rvm/install/).
 ~~~
 curl -L https://get.rvm.io | bash -s stable --ruby
 echo '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*' >> ~/.bashrc
@@ -87,8 +87,11 @@ This example will use X.509 proxy certificates.
 apt-get install globus-proxy-utils
 ~~~
 
-###Valid credentials with an automatic renewal (e.g. a cron job with grid-proxy-init, required for metalb service)
+###Valid credentials with an automatic renewal (required for metalb service)
 The script doesn't check your credentials, you shouldn't let them expire!
+~~~
+crontab -e
+~~~
 ~~~
 */15 * * * * grid-proxy-init
 ~~~
