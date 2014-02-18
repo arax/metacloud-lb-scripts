@@ -14,7 +14,6 @@
 
 require 'erb'
 require 'open3'
-require 'sequel'
 require 'resolv'
 require 'timeout'
 require 'date'
@@ -34,22 +33,6 @@ class MetalbService
     @notifier_name = notifier_name ||  "OpenNebulaMetaLBNotifier"
 
     @logger = logger
-
-    # we need a DB for VMID <-> JOBID mappings
-    if ENV['ONE_LOCATION'].empty? or ENV['ONE_LOCATION'] == '/'
-      @db = Sequel.sqlite 'db/metacloud-notify.sqlite'
-    else
-      @db = Sequel.sqlite "#{ENV['ONE_LOCATION'].chomp '/'}/var/metacloud-notify.sqlite"
-    end
-
-    # create lb_jobs table if there isn't one already available
-    unless @db.tables.include? :lb_jobs
-     @db.create_table :lb_jobs do
-        primary_key :vmid
-        String :lbjobid, :unique => true, :null => false
-        DateTime :created_at
-      end
-    end
   end
 
   def write(message)
@@ -93,16 +76,12 @@ class MetalbService
     if @current_state == :create
       new_jobid = parse_jobid_from cmd_out
       raise NotifierError, "glite-lb-job_reg returned invalid JOB ID. [#{new_jobid}]" unless new_jobid.start_with? "https://"
-      putMapping(@current_vmid, new_jobid)
     end
 
     # if something went wrong, report it
     if exit_status.exitstatus > 0
       raise NotifierError, "Shell execution has failed! #{cmd_err_out}"
     end
-
-    # DONE is the last state, DB clean-up
-    delMapping(@current_vmid) if @current_state == :done
 
     exit_status.exitstatus
 
@@ -129,8 +108,7 @@ class MetalbService
     end
 
     # get vm -> lbjob mapping if there is one
-    edg_jobid = getMapping(@current_vmid)
-    edg_jobid = "https://#{ENV['GLITE_LB_DESTINATION']}/on_#{`hostname -f`.strip}_one-#{vm_template.ID}" if edg_jobid.nil?
+    edg_jobid = "https://#{ENV['GLITE_LB_DESTINATION']}/on_#{`hostname -f`.strip}_one-#{vm_template.ID}"
     
     # TODO do we need dynamic sequences?
     edg_wl_sequence="UI=000000:NS=0000000000:WM=000000:BH=0000000000:JSS=000000:LM=000000:LRMS=000000:APP=000000:LBS=000000"
@@ -163,35 +141,6 @@ class MetalbService
       # no sure what happened, there is no EDG_JOBID in the response
       ""
     end
-  end
-
-  def putMapping(vmid, jobid)
-
-    @logger.debug "[#{@notifier_name}] inserting a mapping #{vmid} -> #{jobid}" unless @logger.nil?
-    @db[:lb_jobs].insert(:vmid => vmid, :lbjobid => jobid, :created_at => DateTime.now)
-
-  end
-
-  def getMapping(vmid)
-    
-    ds = @db[:lb_jobs].where(:vmid => vmid)
-
-    if ds.count == 1
-
-      @logger.debug "[#{@notifier_name}] found a mapping #{vmid} -> #{ds.first[:lbjobid]}" unless @logger.nil? 
-      ds.first[:lbjobid]
-
-    else
-      nil
-    end
-
-  end
-
-  def delMapping(vmid)
-
-    @logger.debug "[#{@notifier_name}] deleting a mapping for #{vmid}" unless @logger.nil?
-    @db[:lb_jobs].filter(:vmid => vmid).delete
-
   end
 
 end
