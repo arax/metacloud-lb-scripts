@@ -1,5 +1,6 @@
 source "http://rubygems.org"
 
+gem "rake"
 gem "lumberjack"
 gem "lumberjack_syslog_device"
 gem "nokogiri-happymapper", :require => 'happymapper'
