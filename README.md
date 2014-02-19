@@ -9,7 +9,7 @@ Installation
 ------------
 ### Prerequisites (required)
 The following step-by-step installation manual expects you to:
-* have OpenNebula v3.4+ installed and properly configured
+* have OpenNebula v4.0+ installed and properly configured
 * execute all commands mentioned below as the oneadmin user or
   its equivalent in your ON installation (except the package manager)
 * have a debian-based distro installed (glite-lb-client-progs are
@@ -20,13 +20,14 @@ The following step-by-step installation manual expects you to:
 * have your credentials registered with the LB server
   to allow logging
 
-### Ruby 1.9.2+ (recommended)
+### Ruby 1.9.3+ (recommended)
 If your distro doesn't provide packages for newer Ruby versions, you can
 use [RVM](https://rvm.io/rvm/install/).
 ~~~
-curl -L https://get.rvm.io | bash -s stable --ruby
+curl -L https://get.rvm.io | bash -s stable
 echo '[[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm" # Load RVM into a shell session *as a function*' >> ~/.bashrc
 source "$HOME/.rvm/scripts/rvm"
+rvm install 1.9.3
 ~~~ 
 
 ###Bundler (required)
@@ -47,6 +48,10 @@ installation during updates).
 ~~~
 cd $ONE_LOCATION/var/remotes/hooks
 git clone git://github.com/arax/metacloud-lb-scripts.git
+cd metacloud-lb-scripts
+
+mkdir ~/mclb_backup/
+mv .git ~/mclb_backup/
 ~~~
 
 ###Gems (required)
